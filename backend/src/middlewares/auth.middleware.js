@@ -1,4 +1,4 @@
-import { verifyToken } from '../utils/jwt.js';
+import TokenService from '../services/token.service.js';
 import User from '../models/user.model.js';
 
 export const protect = async (req, res, next) => {
@@ -20,17 +20,11 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Verify token
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized, token failed',
-      });
-    }
-
+    // Verify and decode token
+    const decoded = TokenService.verifyToken(token);
+    
     // Get user from the token
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.userId).select('-password');
     
     if (!user) {
       return res.status(404).json({
@@ -43,9 +37,10 @@ export const protect = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    res.status(401).json({
+    const statusCode = error.message.includes('expired') ? 401 : 403;
+    res.status(statusCode).json({
       success: false,
-      message: 'Not authorized',
+      message: error.message || 'Not authorized',
     });
   }
 };
