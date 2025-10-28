@@ -1,0 +1,228 @@
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'User Management API',
+      version: '1.0.0',
+      description: 'A complete Node.js, Express.js, and MongoDB backend API with JWT authentication',
+      contact: {
+        name: 'API Support',
+        email: 'support@example.com',
+      },
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000/api',
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+      schemas: {
+        User: {
+          type: 'object',
+          required: ['name', 'email', 'phoneNumber', 'password'],
+          properties: {
+            _id: {
+              type: 'string',
+              description: 'The auto-generated id of the user',
+              example: '60d21b4667d0d8992e610c85',
+            },
+            name: {
+              type: 'string',
+              description: 'The name of the user',
+              example: 'John Doe',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'The email of the user',
+              example: 'john@example.com',
+            },
+            phoneNumber: {
+              type: 'string',
+              description: 'The phone number of the user',
+              example: '1234567890',
+            },
+            role: {
+              type: 'string',
+              enum: ['superadmin', 'wholesaler', 'sales'],
+              default: 'sales',
+              description: 'The role of the user',
+              example: 'sales',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'The date and time when the user was created',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'The date and time when the user was last updated',
+            },
+          },
+        },
+        Login: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'The email of the user',
+              example: 'john@example.com',
+            },
+            password: {
+              type: 'string',
+              format: 'password',
+              description: 'The password of the user',
+              example: 'password123',
+            },
+          },
+        },
+        Token: {
+          type: 'object',
+          properties: {
+            token: {
+              type: 'string',
+              description: 'JWT token for authentication',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+          },
+        },
+        Error: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: false,
+            },
+            message: {
+              type: 'string',
+              description: 'Error message',
+              example: 'Error message describing the issue',
+            },
+            errors: {
+              type: 'object',
+              description: 'Validation errors',
+              example: {
+                email: 'Invalid email format',
+                password: 'Password must be at least 6 characters long',
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        UnauthorizedError: {
+          description: 'Access token is missing or invalid',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Error',
+              },
+              example: {
+                success: false,
+                message: 'Not authorized, token failed',
+              },
+            },
+          },
+        },
+        ForbiddenError: {
+          description: 'User does not have required permissions',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Error',
+              },
+              example: {
+                success: false,
+                message: 'User role sales is not authorized to access this route',
+              },
+            },
+          },
+        },
+        NotFound: {
+          description: 'Resource not found',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Error',
+              },
+              example: {
+                success: false,
+                message: 'User not found',
+              },
+            },
+          },
+        },
+        ValidationError: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Error',
+              },
+              example: {
+                success: false,
+                message: 'Validation error',
+                errors: {
+                  email: 'Please provide a valid email address',
+                  password: 'Password must be at least 6 characters long',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    tags: [
+      {
+        name: 'Auth',
+        description: 'Authentication endpoints',
+      },
+      {
+        name: 'Users',
+        description: 'User management endpoints',
+      },
+    ],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
+  apis: ['./src/routes/*.js'],
+};
+
+const specs = swaggerJsdoc(options);
+
+export const swaggerUiSetup = (app) => {
+  // Swagger page
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'User Management API Documentation',
+    customfavIcon: '/favicon.ico',
+  }));
+
+  // Docs in JSON format
+  app.get('/api-docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(specs);
+  });
+
+  console.log(`📚 API Documentation available at http://localhost:${process.env.PORT || 3000}/api-docs`);
+};
+
+export default swaggerUiSetup;
