@@ -5,9 +5,9 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'User Management API',
+      title: 'E-commerce API',
       version: '1.0.0',
-      description: 'A complete Node.js, Express.js, and MongoDB backend API with JWT authentication',
+      description: 'A complete Node.js, Express.js, and MongoDB backend API with JWT authentication, product management, and inventory tracking',
       contact: {
         name: 'API Support',
         email: 'support@example.com',
@@ -187,6 +187,71 @@ const options = {
       },
     },
     schemas: {
+      Inventory: {
+        type: 'object',
+        required: ['productId'],
+        properties: {
+          _id: {
+            type: 'string',
+            description: 'The auto-generated ID of the inventory',
+            example: '60d5ec9f8b3f8b3f8b3f8b3f'
+          },
+          productId: {
+            type: 'string',
+            description: 'Reference to the product',
+            example: '60d5ec9f8b3f8b3f8b3f8b3f'
+          },
+          quantity: {
+            type: 'number',
+            description: 'Total quantity in stock',
+            default: 0,
+            example: 100
+          },
+          usedQuantity: {
+            type: 'number',
+            description: 'Quantity currently in use',
+            default: 0,
+            example: 10
+          },
+          availableQuantity: {
+            type: 'number',
+            description: 'Available quantity (quantity - usedQuantity)',
+            readOnly: true,
+            example: 90
+          },
+          status: {
+            type: 'string',
+            enum: ['in_stock', 'low_stock', 'out_of_stock'],
+            description: 'Current stock status',
+            default: 'out_of_stock',
+            example: 'in_stock'
+          },
+          lowStockThreshold: {
+            type: 'number',
+            description: 'Threshold for low stock alert',
+            default: 10,
+            example: 20
+          },
+          lastRestocked: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Last restock date',
+            example: '2023-01-01T00:00:00.000Z'
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Creation timestamp',
+            example: '2023-01-01T00:00:00.000Z'
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Last update timestamp',
+            example: '2023-01-01T00:00:00.000Z'
+          }
+        }
+      },
       Product: {
         type: 'object',
         required: ['name', 'description', 'price', 'categoryId'],
