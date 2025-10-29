@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema(
   {
@@ -24,7 +25,7 @@ const userSchema = new mongoose.Schema(
     },
     businessName: {
       type: String,
-      required: [true, 'Please add a business name'],
+
       trim: true,
       maxlength: [100, 'Business name cannot be more than 100 characters'],
     },
@@ -48,22 +49,22 @@ const userSchema = new mongoose.Schema(
     address: {
       street: {
         type: String,
-        required: [true, 'Please add a street address'],
+
         trim: true,
       },
       city: {
         type: String,
-        required: [true, 'Please add a city'],
+        
         trim: true,
       },
       state: {
         type: String,
-        required: [true, 'Please add a state'],
+      
         trim: true,
       },
       pincode: {
         type: String,
-        required: [true, 'Please add a pincode'],
+
         match: [/^[1-9][0-9]{5}$/, 'Please add a valid 6-digit pincode'],
       },
       country: {

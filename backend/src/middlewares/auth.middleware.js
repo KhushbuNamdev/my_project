@@ -24,7 +24,7 @@ export const protect = async (req, res, next) => {
     const decoded = TokenService.verifyToken(token);
     
     // Get user from the token
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(decoded.id).select('-password');
     
     if (!user) {
       return res.status(404).json({
@@ -33,7 +33,11 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    // Ensure we have the user ID available
+    req.user = {
+      ...user.toObject(),
+      _id: user._id
+    };
     next();
   } catch (error) {
     console.error('Authentication error:', error);

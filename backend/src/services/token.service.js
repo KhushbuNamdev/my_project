@@ -18,7 +18,7 @@ class TokenService {
 
         return jwt.sign(
             { 
-                userId,
+                id: userId,  // Changed from userId to id to match JWT standard
                 email,
                 role,
                 iat: Math.floor(Date.now() / 1000) // Issued at time
