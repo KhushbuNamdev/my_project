@@ -186,10 +186,59 @@ const options = {
         },
       },
     },
+    schemas: {
+      // ... existing schemas ...
+      Category: {
+        type: 'object',
+        required: ['name', 'description'],
+        properties: {
+          name: {
+            type: 'string',
+            description: 'Name of the category',
+            example: 'Electronics',
+            maxLength: 50
+          },
+          description: {
+            type: 'string',
+            description: 'Description of the category',
+            example: 'Electronic gadgets and devices',
+            maxLength: 500
+          },
+          image: {
+            type: 'string',
+            description: 'URL of the category image',
+            example: 'https://example.com/images/electronics.jpg',
+            format: 'uri'
+          },
+          status: {
+            type: 'string',
+            enum: ['active', 'inactive'],
+            default: 'active',
+            description: 'Status of the category'
+          },
+          parentId: {
+            type: 'string',
+            format: 'objectId',
+            description: 'ID of the parent category',
+            example: '507f1f77bcf86cd799439011'
+          },
+          isDeleted: {
+            type: 'boolean',
+            default: false,
+            description: 'Soft delete flag'
+          }
+        }
+      },
+      // ... rest of the schemas ...
+    },
     tags: [
       {
         name: 'Auth',
         description: 'Authentication endpoints',
+      },
+      {
+        name: 'Categories',
+        description: 'Category management endpoints',
       },
       {
         name: 'Users',

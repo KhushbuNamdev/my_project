@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import connectDB from './config/db.js';
 import { swaggerUiSetup } from './config/swagger.js';
 import userRoutes from './routes/user.routes.js';
+import categoryRoutes from './routes/category.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // API Routes
 app.use('/api/users', userRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
