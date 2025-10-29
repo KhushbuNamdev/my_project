@@ -187,7 +187,68 @@ const options = {
       },
     },
     schemas: {
-      // ... existing schemas ...
+      Product: {
+        type: 'object',
+        required: ['name', 'description', 'price', 'categoryId'],
+        properties: {
+          _id: {
+            type: 'string',
+            description: 'The auto-generated id of the product',
+            example: '60d21b4667d0d8992e610c85',
+          },
+          name: {
+            type: 'string',
+            description: 'The name of the product',
+            example: 'Premium Quality T-Shirt',
+          },
+          description: {
+            type: 'string',
+            description: 'Detailed description of the product',
+            example: 'High-quality cotton t-shirt with premium finish',
+          },
+          price: {
+            type: 'number',
+            format: 'float',
+            description: 'Price of the product',
+            example: 29.99,
+          },
+          categoryId: {
+            type: 'string',
+            description: 'ID of the category this product belongs to',
+            example: '60d21b4667d0d8992e610c86',
+          },
+          images: {
+            type: 'array',
+            items: {
+              type: 'string',
+              format: 'url',
+            },
+            description: 'Array of image URLs for the product',
+            example: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
+          },
+          stock: {
+            type: 'integer',
+            description: 'Available stock quantity',
+            example: 100,
+          },
+          status: {
+            type: 'string',
+            enum: ['active', 'inactive', 'out_of_stock'],
+            default: 'active',
+            description: 'Current status of the product',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'The date and time when the product was created',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'The date and time when the product was last updated',
+          },
+        },
+      },
       Category: {
         type: 'object',
         required: ['name', 'description'],

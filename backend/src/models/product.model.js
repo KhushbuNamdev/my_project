@@ -11,7 +11,7 @@ const productSchema = new Schema({
     },
     images: [{
         type: String,
-        required: [true, 'At least one image is required'],
+
         validate: {
             validator: function(v) {
                 return v.length > 0;
@@ -23,12 +23,6 @@ const productSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
         required: [true, 'At least one category is required'],
-        validate: {
-            validator: function(v) {
-                return v.length > 0;
-            },
-            message: 'At least one category is required'
-        }
     }],
     status: {
         type: String,
