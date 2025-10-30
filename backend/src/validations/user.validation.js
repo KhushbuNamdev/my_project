@@ -38,9 +38,13 @@ export const registerValidation = Joi.object({
 
 // Validation for user login
 export const loginValidation = Joi.object({
-  email: Joi.string().email().required().messages({
+  email: Joi.string().email().optional().messages({
     'string.email': 'Please provide a valid email address',
     'string.empty': 'Email is required',
+  }),
+  phoneNumber: Joi.string().pattern(/^\d{10}$/).required().messages({
+    'string.pattern.base': 'Phone number must be 10 digits',
+    'string.empty': 'Phone number is required',
   }),
   password: Joi.string().required().messages({
     'string.empty': 'Password is required',

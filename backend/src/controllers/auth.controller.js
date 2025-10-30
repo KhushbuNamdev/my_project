@@ -55,28 +55,31 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Auth user & get token
+// @desc    Auth user & get token with email or phone number
 // @route   POST /api/users/login
 // @access  Public
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const {  phoneNumber, password } = req.body;
 
-    // Validate input
-    if (!email || !password) {
+    // Validate input - this is handled by Joi validation middleware
+    if (!password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide both email and password',
+        message: 'Password is required',
       });
     }
 
+    // Build query based on provided identifier (email or phoneNumber)
+    const query = phoneNumber ? { phoneNumber } : { phoneNumber };
+    
     // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne(query).select('+password');
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: 'Invalid credentials',
       });
     }
 
@@ -99,7 +102,7 @@ export const loginUser = async (req, res) => {
       data: {
         _id,
         name,
-        email: user.email,
+        phoneNumber: user.phoneNumber,
         role,
         token,
       },
