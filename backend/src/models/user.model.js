@@ -11,76 +11,123 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-   
       unique: true,
-      match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        'Please add a valid email',
-      ],
+      sparse: true, // Allows multiple null/empty values for uniqueness
+      default: null,
+      validate: {
+        validator: function(v) {
+          if (v === null || v === '') return true; // Allow null or empty string
+          return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
+        },
+        message: 'Please provide a valid email address'
+      },
+      set: function(v) {
+        // Convert empty string to null
+        return v === '' ? null : v;
+      }
     },
     phoneNumber: {
       type: String,
       required: [true, 'Please add a phone number'],
       maxlength: [15, 'Phone number cannot be longer than 15 characters'],
     },
-    businessName: {
-      type: String,
-
-      trim: true,
-      maxlength: [100, 'Business name cannot be more than 100 characters'],
-    },
-    gstNumber: {
-      type: String,
-      trim: true,
-      uppercase: true,
-      match: [
-        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/,
-        'Please add a valid GST number (e.g., 22AAAAA0000A1Z5)'
-      ],
-    },
-    aadharNumber: {
-      type: String,
-      trim: true,
-      match: [
-        /^[2-9]{1}[0-9]{3}\s[0-9]{4}\s[0-9]{4}$/,
-        'Please add a valid Aadhar number (e.g., 2345 6789 0123)'
-      ],
-    },
-    address: {
-      street: {
-        type: String,
-
-        trim: true,
-      },
-      city: {
-        type: String,
-        
-        trim: true,
-      },
-      state: {
-        type: String,
-      
-        trim: true,
-      },
-      pincode: {
-        type: String,
-
-        match: [/^[1-9][0-9]{5}$/, 'Please add a valid 6-digit pincode'],
-      },
-      country: {
-        type: String,
-        default: 'India',
-      },
-    },
     password: {
       type: String,
-      required: [true, 'Please add a password'],
+      required: false,
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
     role: {
       type: String,
       enum: ['superadmin', 'wholesaler', 'sales'],
+      required: [true, 'Role is required'],
+    },
+    // Wholesaler specific fields
+    businessName: {
+      type: String,
+      trim: true,
+      required: function() {
+        return this.role === 'wholesaler';
+      },
+      validate: {
+        validator: function(v) {
+          if (this.role === 'wholesaler') {
+            return v && v.length > 0;
+          }
+          return true;
+        },
+        message: 'Business name is required for wholesalers'
+      }
+    },
+    adharNumber: {
+      type: String,
+      trim: true,
+      required: false,
+      default: null,
+      
+    },
+    gstNumber: {
+      type: String,
+      trim: true,
+      required: function() {
+        return this.role === 'wholesaler';
+      },
+      validate: {
+        validator: function(v) {
+          if (this.role === 'wholesaler') {
+            return /^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(v);
+          }
+          return true;
+        },
+        message: 'Please provide a valid GST number'
+      }
+    },
+    address: {
+      street: {
+        type: String,
+        trim: true,
+        required: function() {
+          return this.role === 'wholesaler';
+        }
+      },
+      city: {
+        type: String,
+        trim: true,
+        required: function() {
+          return this.role === 'wholesaler';
+        }
+      },
+      state: {
+        type: String,
+        trim: true,
+        required: function() {
+          return this.role === 'wholesaler';
+        }
+      },
+      pincode: {
+        type: String,
+        trim: true,
+        required: function() {
+          return this.role === 'wholesaler';
+        },
+        validate: {
+          validator: function(v) {
+            if (this.role === 'wholesaler') {
+              return /^\d{6}$/.test(v);
+            }
+            return true;
+          },
+          message: 'Please provide a valid 6-digit pincode'
+        }
+      },
+      country: {
+        type: String,
+        trim: true,
+        default: 'India',
+        required: function() {
+          return this.role === 'wholesaler';
+        }
+      }
     },
   },
   {

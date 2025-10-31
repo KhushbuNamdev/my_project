@@ -4,7 +4,7 @@ import { registerValidation, loginValidation, updateUserValidation } from '../va
 import { validate } from '../middlewares/validation.middleware.js';
 
 // Import controllers
-import { registerUser, loginUser, getCurrentUser } from '../controllers/auth.controller.js';
+import { registerUser, loginUser, getCurrentUser  } from '../controllers/auth.controller.js';
 import { getUsers, getUserById } from '../controllers/getUser.controller.js';
 import { createUser } from '../controllers/createUser.controller.js';
 import { updateUserProfile, updateUser } from '../controllers/updateUser.controller.js';
