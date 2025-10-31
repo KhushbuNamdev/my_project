@@ -2,6 +2,7 @@
 
 
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import {
   Box,
   Drawer,
@@ -14,13 +15,14 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { logout } from '../Slice/authSlice';
 import Sidebar from './sidebar';
 import Statistics from '../layout/statistics';
 import Productview from '../layout/product/productview';
 import Wolesalerview from '../layout/wholesaler/wholesalerview';
 import Categoryview from '../layout/categories/categoryview';
 import Salesview from '../layout/sales/salesview';
-import Profile from '../layout/profile/profilepage'; // 👈 create this page
+import Profile from '../layout/profile/profilepage';
 
 const drawerWidth = 240;
 
@@ -58,10 +60,12 @@ const DashboardLayout = ({ onLogout }) => {
     navigate('/profile');
   };
 
+  const dispatch = useDispatch();
+
   const handleLogoutClick = () => {
     handleMenuClose();
-    navigate('/login'); // 👈 redirect to login
-    if (onLogout) onLogout(); // optional callback
+    dispatch(logout());
+    navigate('/login', { replace: true });
   };
 
   return (
