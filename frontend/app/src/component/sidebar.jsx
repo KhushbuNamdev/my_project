@@ -1,7 +1,4 @@
-
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import {
   Box,
   List,
@@ -12,21 +9,20 @@ import {
   Typography,
   Divider,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { logout } from '../Slice/authSlice';
 
-const Sidebar = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+const Sidebar = ({ onLogout }) => {
+  const location = useLocation();
+
   const menuItems = [
-    { text: 'Statistics', icon: <AcUnitIcon />, path: '/statistics' },
-    { text: 'Product', icon: <AcUnitIcon />, path: '/productview' },
-    { text: 'Sales', icon: <AcUnitIcon />, path: '/salesview' },
-    { text: 'Categories', icon: <AcUnitIcon />, path: '/categoryview' },
-    { text: 'Wholesaler', icon: <AcUnitIcon />, path: '/wholesalerview' },
-    { text: 'Settings', icon: <AcUnitIcon />, path: '/settings' },
+    { text: 'Statistics', icon: <AcUnitIcon />, path: '/dashboard/statistics' },
+    { text: 'Product', icon: <AcUnitIcon />, path: '/dashboard/productview' },
+    { text: 'Sales', icon: <AcUnitIcon />, path: '/dashboard/salesview' },
+    { text: 'Categories', icon: <AcUnitIcon />, path: '/dashboard/categoryview' },
+    { text: 'Wholesaler', icon: <AcUnitIcon />, path: '/dashboard/wholesalerview' },
+    { text: 'Settings', icon: <AcUnitIcon />, path: '/dashboard/settings' },
   ];
 
   return (
@@ -34,7 +30,6 @@ const Sidebar = () => {
       sx={{
         textAlign: 'center',
         height: '100%',
-        position: 'relative',
         bgcolor: '#fff3f3',
         display: 'flex',
         flexDirection: 'column',
@@ -51,34 +46,32 @@ const Sidebar = () => {
         </Typography>
         <Divider />
         <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                component={Link}
-                to={item.path}
-                sx={{
-                  textAlign: 'left',
-                  '&:hover': { bgcolor: '#fde4e4' },
-                }}
-              >
-                <ListItemIcon sx={{ color: 'error.main' }}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  to={item.path}
+                  sx={{
+                    textAlign: 'left',
+                    bgcolor: isActive ? '#fde4e4' : 'transparent',
+                    '&:hover': { bgcolor: '#fde4e4' },
+                  }}
+                >
+                  <ListItemIcon sx={{ color: 'error.main' }}>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
       </Box>
 
       {/* Bottom Logout */}
       <Box sx={{ pb: 2 }}>
         <Divider sx={{ mb: 1 }} />
-        <ListItemButton
-          onClick={() => {
-            dispatch(logout());
-            navigate('/login', { replace: true });
-          }}
-          sx={{ '&:hover': { bgcolor: '#fde4e4' } }}
-        >
+        <ListItemButton onClick={onLogout} sx={{ '&:hover': { bgcolor: '#fde4e4' } }}>
           <ListItemIcon sx={{ color: 'error.main' }}>
             <LogoutIcon />
           </ListItemIcon>

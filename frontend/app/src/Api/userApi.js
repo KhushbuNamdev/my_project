@@ -1,47 +1,83 @@
+
+
+
+
+
 import api from '../service/axiosService';
 
-export const userApi = {
-  // Get all users
-  getAllUsers: async () => {
-    const response = await api.get('/users');
-    return response.data;
+const userApi = {
+  // Get current user profile
+  getCurrentUser: async () => {
+    try {
+      const response = await api.get('/users/me');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   },
 
-  // Get single user by ID
+  // Update user profile
+  updateProfile: async (userData) => {
+    try {
+      const response = await api.put('/users/profile', userData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Change password
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      const response = await api.put('/users/change-password', {
+        currentPassword,
+        newPassword,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Get all users (admin only)
+  getAllUsers: async (params = {}) => {
+    try {
+      const response = await api.get('/users', { params });
+      return response.data; // Return the full response
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Get user by ID
   getUserById: async (userId) => {
-    const response = await api.get(`/users/${userId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   },
 
-  // Create new user
-  createUser: async (userData) => {
-    const response = await api.post('/users', userData);
-    return response.data;
-  },
-
-  // Update existing user
+  // Update user by ID
   updateUser: async (userId, userData) => {
-    const response = await api.put(`/users/${userId}`, userData);
-    return response.data;
+    try {
+      const response = await api.put(`/users/${userId}`, userData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   },
 
   // Delete user
   deleteUser: async (userId) => {
-    const response = await api.delete(`/users/${userId}`);
-    return response.data;
+    try {
+      const response = await api.delete(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   },
-
-  // Update user profile
-  updateProfile: async (userId, profileData) => {
-    const response = await api.patch(`/users/${userId}/profile`, profileData);
-    return response.data;
-  },
-
-  // Change user password
-  changePassword: async (userId, passwordData) => {
-    const response = await api.post(`/users/${userId}/change-password`, passwordData);
-    return response.data;
-  }
 };
 
 export default userApi;

@@ -1,121 +1,103 @@
-
-// import React, { useEffect } from 'react';
-// import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-// import { useSelector, useDispatch } from 'react-redux';
-// import { initializeAuth } from './Slice/authSlice';
-// import LoginPage from './Homepage/loginpage';
-// import Dashboard from './component/Dashboard';
-// import "./App.css";
-
-// // Protected Route Component
-// const ProtectedRoute = ({ children }) => {
-//   const { isAuthenticated, isInitialized } = useSelector((state) => state.auth);
-//   const location = useLocation();
-
-//   if (!isInitialized) {
-//     return <div>Loading...</div>; // Or a loading spinner
-//   }
-
-//   if (!isAuthenticated) {
-//     return <Navigate to="/login" state={{ from: location }} replace />;
-//   }
-
-//   return children;
-// };
-
-// // Public Route Component
-// const PublicRoute = ({ children }) => {
-//   const { isAuthenticated } = useSelector((state) => state.auth);
-//   const location = useLocation();
-
-//   if (isAuthenticated) {
-//     const from = location.state?.from?.pathname || '/';
-//     return <Navigate to={from} replace />;
-//   }
-
-//   return children;
-// };
-
-// const App = () => {
-//   const dispatch = useDispatch();
-//   const { isAuthenticated, isInitialized } = useSelector((state) => state.auth);
-
-//   useEffect(() => {
-//     // Initialize authentication state
-//     dispatch(initializeAuth());
-
-//     // Log environment variables
-//     console.log('Environment:', {
-//       apiUrl: import.meta.env.VITE_API_URL,
-//       env: import.meta.env.VITE_ENV
-//     });
-//   }, [dispatch]);
-
-//   // Show loading state while initializing
-//   if (!isInitialized) {
-//     return <div>Loading...</div>; // Or a loading spinner
-//   }
-
-//   return (
-//     <Router>
-//       <Routes>
-//         <Route path="/login" element={
-//           <PublicRoute>
-//             <LoginPage />
-//           </PublicRoute>
-//         } />
-        
-//         <Route path="/*" element={
-//           <ProtectedRoute>
-//             <Dashboard />
-//           </ProtectedRoute>
-//         } />
-//       </Routes>
-//     </Router>
-//   );
-// };
-
-// export default App;
-// In App.jsx
-
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { initializeAuth } from './Slice/authSlice';
-import LoginPage from './Homepage/loginpage';
-import Dashboard from './component/Dashboard';
-import "./App.css";
+import { CircularProgress, Box } from '@mui/material';
+import Cookies from 'js-cookie';
+import { fetchCurrentUser } from './Slice/authSlice';
+import './App.css';
+
+// Lazy-loaded components
+const LoginPage = React.lazy(() => import('./Homepage/loginpage'));
+const Dashboard = React.lazy(() => import('./component/Dashboard'));
+
 const App = () => {
   const dispatch = useDispatch();
-  const { isAuthenticated, isInitialized } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
+  const [initialLoading, setInitialLoading] = React.useState(true);
 
+  // ✅ On app load, check if token exists in cookies and fetch current user
   useEffect(() => {
-    dispatch(initializeAuth());
-  }, [dispatch]);
+    const token = Cookies.get('token');
+    if (token && !isAuthenticated) {
+      dispatch(fetchCurrentUser())
+        .finally(() => setInitialLoading(false));
+    } else {
+      setInitialLoading(false);
+    }
+  }, [dispatch, isAuthenticated]);
 
-  if (!isInitialized) {
-    return <div>Loading...</div>;
+  // ✅ Protected Route Component
+  const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+    if (loading || initialLoading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    const token = Cookies.get('token');
+    if (!isAuthenticated || !token) {
+      return <Navigate to="/login" replace />;
+    }
+
+    if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+      return <Navigate to="/dashboard" replace />;
+    }
+
+    return children;
+  };
+
+  // ✅ Global loading while checking authentication
+  if (loading || initialLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
-        />
-        <Route
-          path="/*"
-          element={
-            isAuthenticated ? (
-              <Dashboard />
-            ) : (
-              <Navigate to="/login" state={{ from: window.location.pathname }} replace />
-            )
-          }
-        />
-      </Routes>
-    </Router>
+    <Suspense
+      fallback={
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress />
+        </Box>
+      }
+    >
+      <Router>
+        <Routes>
+          {/* Login Route */}
+          <Route
+            path="/login"
+            element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />}
+          />
+
+          {/* Protected Dashboard Route */}
+          <Route
+            path="/dashboard/*"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Default Route */}
+          <Route
+            path="/"
+            element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+          />
+
+          {/* Fallback for unknown routes */}
+          <Route
+            path="*"
+            element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+          />
+        </Routes>
+      </Router>
+    </Suspense>
   );
 };
+
 export default App;

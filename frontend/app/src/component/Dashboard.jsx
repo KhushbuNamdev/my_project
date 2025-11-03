@@ -2,7 +2,6 @@
 
 
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import {
   Box,
   Drawer,
@@ -15,14 +14,13 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { logout } from '../Slice/authSlice';
 import Sidebar from './sidebar';
 import Statistics from '../layout/statistics';
 import Productview from '../layout/product/productview';
-import Wolesalerview from '../layout/wholesaler/wholesalerview';
+import Wholesalerview from '../layout/wholesaler/wholesalerview';
 import Categoryview from '../layout/categories/categoryview';
 import Salesview from '../layout/sales/salesview';
-import Profile from '../layout/profile/profilepage';
+import Profile from '../layout/profile/profilepage'; // 👈 create this page
 
 const drawerWidth = 240;
 
@@ -60,12 +58,10 @@ const DashboardLayout = ({ onLogout }) => {
     navigate('/profile');
   };
 
-  const dispatch = useDispatch();
-
   const handleLogoutClick = () => {
     handleMenuClose();
-    dispatch(logout());
-    navigate('/login', { replace: true });
+    navigate('/login'); // 👈 redirect to login
+    if (onLogout) onLogout(); // optional callback
   };
 
   return (
@@ -171,17 +167,17 @@ const DashboardLayout = ({ onLogout }) => {
         }}
       >
         <Routes>
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/productview" element={<Productview />} />
-          <Route path="/wholesalerview" element={<Wolesalerview />} />
-          <Route path="/categoryview" element={<Categoryview />} />
-          <Route path="/salesview" element={<Salesview />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route
-            path="/"
-            element={<Typography variant="h4">Welcome to Dashboard 🎉</Typography>}
-          />
-        </Routes>
+  <Route path="/statistics" element={<Statistics />} />
+  <Route path="/productview" element={<Productview />} />
+  <Route path="/wholesalerview" element={<Wholesalerview />} />
+  <Route path="/categoryview" element={<Categoryview />} />
+  <Route path="/salesview" element={<Salesview />} />
+  <Route path="/profile" element={<Profile />} />
+  <Route
+    path="/"
+    element={<Typography variant="h4">Welcome to Dashboard 🎉</Typography>}
+  />
+</Routes>
       </Box>
     </Box>
   );
