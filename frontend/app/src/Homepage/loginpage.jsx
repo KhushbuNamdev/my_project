@@ -1,129 +1,51 @@
-// import React, { useState } from 'react';
-// import { Box, Paper, Typography, TextField, Button, Avatar } from '@mui/material';
-
-// const LoginPage = ({ onLogin }) => {
-//   const [email, setEmail] = useState('');
-//   const [password, setPassword] = useState('');
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (email && password) {
-//       onLogin();
-//     } else {
-//       alert('Please enter email and password');
-//     }
-//   };
-
-//   return (
-//     <Box
-//       sx={{
-//         minHeight: '100vh',
-//         display: 'flex',
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         p: 2,
-//         background: 'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
-//       }}
-//     >
-//       <Paper
-//         elevation={10}
-//         sx={{
-//           p: 4,
-//           width: 380,
-//           borderRadius: 3,
-//           background: 'rgba(255, 255, 255, 0.2)', // semi-transparent white
-//           backdropFilter: 'blur(12px)', // glass blur effect
-//           WebkitBackdropFilter: 'blur(12px)', // Safari support
-//           boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-//           border: '1px solid rgba(255, 255, 255, 0.3)',
-//         }}
-//       >
-//         <Box textAlign="center" mb={3}>
-//           <Avatar sx={{ bgcolor: 'error.main', mx: 'auto', mb: 1 }}>A</Avatar>
-//           <Typography variant="h5" fontWeight="bold" color="error.main">
-//             Admin Login
-//           </Typography>
-//         </Box>
-
-//         <form onSubmit={handleSubmit}>
-//           <TextField
-//             label="Email"
-//             type="email"
-//             fullWidth
-//             margin="normal"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             InputProps={{
-//               sx: {
-//                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
-//                 borderRadius: 1,
-//               },
-//             }}
-//           />
-//           <TextField
-//             label="Password"
-//             type="password"
-//             fullWidth
-//             margin="normal"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             InputProps={{
-//               sx: {
-//                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
-//                 borderRadius: 1,
-//               },
-//             }}
-//           />
-//           <Button
-//             fullWidth
-//             type="submit"
-//             variant="contained"
-//             color="error"
-//             sx={{ mt: 3, fontWeight: 'bold', py: 1.2 }}
-//           >
-//             Sign In
-//           </Button>
-//         </form>
-//       </Paper>
-//     </Box>
-//   );
-// };
-
-// export default LoginPage;
-
-
-
-
-import React, { useState } from 'react';
-import { Box, Paper, Typography, TextField, Button, Avatar } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../Slice/authSlice'; // adjust path as needed
 import { useNavigate } from 'react-router-dom';
+import { loginUser, clearError } from '../Slice/authSlice';
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Avatar,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const LoginPage = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { loading, error } = useSelector((state) => state.auth);
-
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const { isAuthenticated, loading, error } = useSelector((state) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+    loading: state.auth.loading,
+    error: state.auth.error,
+  }));
 
-    if (!phoneNumber || !password) {
-      alert('Please enter phone number and password');
-      return;
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
     }
+  }, [isAuthenticated, navigate]);
 
-    dispatch(login({ phoneNumber, password }))
-      .unwrap()
-      .then(() => {
-        navigate('/dashboard'); // redirect after success
-      })
-      .catch((err) => {
-        alert(err || 'Login failed');
-      });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    dispatch(clearError());
+
+    if (!phoneNumber || !password) return;
+
+    try {
+      const resultAction = await dispatch(loginUser({ phoneNumber, password }));
+      if (loginUser.fulfilled.match(resultAction)) {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error('Login failed:', err);
+    }
   };
 
   return (
@@ -131,72 +53,88 @@ const LoginPage = () => {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        p: 2,
-        background: 'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
+        justifyContent: 'center',
+        // 🎨 Background gradient
+        backgroundColor: '#fecaca',
+        backgroundImage:
+          'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
+        color: '#111',
+        margin: 0,
+        padding: 2,
       }}
     >
       <Paper
-        elevation={10}
+        elevation={6}
         sx={{
-          p: 4,
-          width: 380,
-          borderRadius: 3,
-          background: 'rgba(255, 255, 255, 0.2)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
+          padding: 4,
+          width: '100%',
+          maxWidth: 400,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          borderRadius: 4,
+           backgroundColor: '#fecaca',
+        backgroundImage:
+          'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
+        color: '#111',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
         }}
       >
-        <Box textAlign="center" mb={3}>
-          <Avatar sx={{ bgcolor: 'error.main', mx: 'auto', mb: 1 }}>A</Avatar>
-          <Typography variant="h5" fontWeight="bold" color="error.main">
-            Admin Login
-          </Typography>
-        </Box>
+        <Avatar sx={{ m: 1, bgcolor: '#ef4444' }}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold', color: '#111' }}>
+          Sign In
+        </Typography>
 
-        <form onSubmit={handleSubmit}>
+        {error && (
+          <Alert severity="error" sx={{ width: '100%', mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width: '100%' }}>
           <TextField
-            label="Phone Number"
-            type="text"
-            fullWidth
             margin="normal"
+            required
+            fullWidth
+            id="phone"
+            label="Phone Number"
+            name="phoneNumber"
+            autoComplete="tel"
+            autoFocus
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: 1 },
-            }}
           />
           <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
             label="Password"
             type="password"
-            fullWidth
-            margin="normal"
+            id="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: 1 },
-            }}
           />
+
           <Button
-            fullWidth
             type="submit"
+            fullWidth
             variant="contained"
-            color="error"
-            sx={{ mt: 3, fontWeight: 'bold', py: 1.2 }}
+            sx={{
+              mt: 3,
+              mb: 2,
+              bgcolor: '#ef4444',
+              '&:hover': { bgcolor: '#dc2626' },
+            }}
             disabled={loading}
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Sign In'}
           </Button>
-
-          {error && (
-            <Typography variant="body2" color="error" mt={2} textAlign="center">
-              {error}
-            </Typography>
-          )}
-        </form>
+        </Box>
       </Paper>
     </Box>
   );

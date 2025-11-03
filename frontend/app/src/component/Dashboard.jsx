@@ -1,6 +1,3 @@
-
-
-
 import React from 'react';
 import {
   Box,
@@ -13,45 +10,42 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import MenuIcon from '@mui/icons-material/Menu';
+import { useLocation, useNavigate, Outlet, Routes, Route } from 'react-router-dom';
 import Sidebar from './sidebar';
-import Statistics from '../layout/statistics';
-import Productview from '../layout/product/productview';
-import Wholesalerview from '../layout/wholesaler/wholesalerview';
-import Categoryview from '../layout/categories/categoryview';
-import Salesview from '../layout/sales/salesview';
-import Profile from '../layout/profile/profilepage'; // 👈 create this page
+import Statistics from "../layout/statistics"
+import Productview from '../layout/product/productview.jsx';
+import Wholesalerview from '../layout/wholesaler/wholesalerview.jsx';
+import Categoryview from '../layout/categories/categoryview.jsx';
+import Salesview from '../layout/sales/salesview.jsx';
+import Profile from '../layout/profile/profilepage.jsx';
 
 const drawerWidth = 240;
 
 const DashboardLayout = ({ onLogout }) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [anchorEl, setAnchorEl] = React.useState(null); // for dropdown
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 👇 Map pathnames to titles
+  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+
+  // Map path to title
   const pageTitles = {
     '/statistics': 'Statistics',
-    '/productview': 'Product',
+    '/productview': 'Products',
     '/salesview': 'Sales',
     '/categoryview': 'Categories',
-    '/wholesalerview': 'Wholesaler',
-    '/settings': 'Settings',
+    '/wholesalerview': 'Wholesalers',
     '/profile': 'Profile',
   };
 
   const currentTitle = pageTitles[location.pathname] || 'Dashboard';
 
-  // 👇 Dropdown menu handlers
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  // Avatar Menu handlers
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   const handleProfileClick = () => {
     handleMenuClose();
@@ -60,8 +54,8 @@ const DashboardLayout = ({ onLogout }) => {
 
   const handleLogoutClick = () => {
     handleMenuClose();
-    navigate('/login'); // 👈 redirect to login
-    if (onLogout) onLogout(); // optional callback
+    if (onLogout) onLogout();
+    navigate('/login');
   };
 
   return (
@@ -82,53 +76,34 @@ const DashboardLayout = ({ onLogout }) => {
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { sm: 'none' } }}
           >
-            ☰
+            <MenuIcon />
           </IconButton>
-
-          {/* 👇 Dynamic Title */}
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             {currentTitle}
           </Typography>
 
-          {/* Avatar + Dropdown */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar
-              sx={{
-                bgcolor: 'white',
-                color: 'error.main',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                mr: 1,
-              }}
-              onClick={handleMenuOpen}
-            >
-              A
-            </Avatar>
-
-            {/* Dropdown Menu */}
-            <Menu
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleMenuClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-            >
-              <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
-              <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
-            </Menu>
-          </Box>
+          {/* Avatar dropdown */}
+          <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+            <Avatar alt="User" />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+            <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar Section */}
-      <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
-        {/* Mobile Drawer */}
+      {/* Sidebar */}
+      <Box
+        component="nav"
+        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+      >
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -139,10 +114,9 @@ const DashboardLayout = ({ onLogout }) => {
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
         >
-          <Sidebar onLogout={onLogout} />
+          <Sidebar onLogout={handleLogoutClick} />
         </Drawer>
 
-        {/* Permanent Drawer */}
         <Drawer
           variant="permanent"
           sx={{
@@ -151,7 +125,7 @@ const DashboardLayout = ({ onLogout }) => {
           }}
           open
         >
-          <Sidebar onLogout={onLogout} />
+          <Sidebar onLogout={handleLogoutClick} />
         </Drawer>
       </Box>
 
@@ -160,24 +134,20 @@ const DashboardLayout = ({ onLogout }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          bgcolor: '#fff3f3',
           p: 3,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
           mt: 8,
-          minHeight: '100vh',
         }}
       >
         <Routes>
-  <Route path="/statistics" element={<Statistics />} />
-  <Route path="/productview" element={<Productview />} />
-  <Route path="/wholesalerview" element={<Wholesalerview />} />
-  <Route path="/categoryview" element={<Categoryview />} />
-  <Route path="/salesview" element={<Salesview />} />
-  <Route path="/profile" element={<Profile />} />
-  <Route
-    path="/"
-    element={<Typography variant="h4">Welcome to Dashboard 🎉</Typography>}
-  />
-</Routes>
+          <Route path="/" element={<Statistics />} />
+          <Route path="statistics" element={<Statistics />} />
+          <Route path="productview" element={<Productview />} />
+          <Route path="salesview" element={<Salesview />} />
+          <Route path="categoryview" element={<Categoryview />} />
+          <Route path="wholesalerview" element={<Wholesalerview />} />
+          <Route path="profile" element={<Profile />} />
+        </Routes>
       </Box>
     </Box>
   );

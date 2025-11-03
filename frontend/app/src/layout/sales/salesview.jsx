@@ -17,7 +17,7 @@ const Salesview = () => {
         color="error.main"
         textAlign="center"
       >
-        Product View
+      sales View
       </Typography>
 
       {/* Empty MDDataGrid */}
