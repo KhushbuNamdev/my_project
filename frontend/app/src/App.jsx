@@ -1,25 +1,35 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { checkAuthStatus } from './Slice/authSlice';
 import LoginPage from './Homepage/loginpage';
 import DashboardLayout from './component/Dashboard';
 
 function App() {
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const dispatch = useDispatch();
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(checkAuthStatus());
+  }, [dispatch]);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
-        <Route 
-          path="/dashboard/*" 
-          element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />} 
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}
         />
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+        <Route
+          path="/dashboard/*"
+          element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" replace />}
+        />
+        <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
-
-

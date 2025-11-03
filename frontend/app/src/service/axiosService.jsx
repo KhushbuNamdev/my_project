@@ -1,16 +1,16 @@
+// src/service/axiosService.js
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-// ✅ Environment-based configuration
 const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
-  TIMEOUT: 10000, // 10 seconds
+  TIMEOUT: 10000,
   HEADERS: {
     'Content-Type': 'application/json',
   },
 };
 
-// ✅ Axios instance create karte hain
+// ✅ Create axios instance
 const axiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
@@ -20,9 +20,14 @@ const axiosInstance = axios.create({
 // ✅ Request Interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('token'); // cookies se token get karo
+    // Skip adding token for login/register
+    if (config.url.includes('/login') || config.url.includes('/register')) {
+      return config;
+    }
+
+    const token = Cookies.get('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // har request me token bhejo
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -31,12 +36,12 @@ axiosInstance.interceptors.request.use(
 
 // ✅ Response Interceptor
 axiosInstance.interceptors.response.use(
-  (response) => response, // sirf response.data return karenge
+  (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.error('Unauthorized! Please login again.');
-      Cookies.remove('token'); // token invalid hone pe cookie se hata do
-      window.location.href = '/login'; // login page pe redirect
+      console.warn('Unauthorized! Logging out...');
+      Cookies.remove('token');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
