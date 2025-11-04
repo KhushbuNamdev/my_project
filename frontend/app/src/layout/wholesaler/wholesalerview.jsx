@@ -1,19 +1,25 @@
-
 import React, { useEffect } from 'react';
 import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllUsers } from '../../Slice/userSlice';
-import MDDataGrid from '../../custom/MDdatagrid'; // ✅ adjust this path if needed
+import MDDataGrid from '../../custom/MDdatagrid';
+import MDButton from '../../custom/MDbutton';
+import MDSearchBar from '../../custom/MDsearchbar';
 
 const Wholesalerview = () => {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.user);
 
+  const handleCreateWholesaler = () => {
+    // Handle create wholesaler action here
+    console.log('Create wholesaler button clicked');
+  };
+
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
 
-  // ✅ Filter only users whose role is "wholesaler"
+  // Filter only users whose role is "wholesaler"
   const wholesalers = users.filter((user) => user.role === 'wholesaler');
 
   // Define columns for the DataGrid
@@ -25,7 +31,7 @@ const Wholesalerview = () => {
     { field: 'country', headerName: 'Country', flex: 1, minWidth: 120 },
   ];
 
-  // ✅ Transform filtered wholesalers data for DataGrid
+  // Transform filtered wholesalers data for DataGrid
   const rows = wholesalers.map((user, index) => ({
     id: user._id || index,
     name: user.name || 'N/A',
@@ -51,12 +57,39 @@ const Wholesalerview = () => {
     );
   }
 
-  return (
-    <Box sx={{ width: '100%' }}>
-      
+  const [searchTerm, setSearchTerm] = React.useState('');
 
-      {/* ✅ Only shows users with role = wholesaler */}
-      <MDDataGrid rows={rows} columns={columns} pageSize={5} height={400} />
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value.toLowerCase());
+  };
+
+  // Filter rows based on search term
+  const filteredRows = React.useMemo(() => {
+    if (!searchTerm) return rows;
+    
+    return rows.filter(row => 
+      Object.values(row).some(
+        value => 
+          value && 
+          value.toString().toLowerCase().includes(searchTerm)
+      )
+    );
+  }, [rows, searchTerm]);
+
+  return (
+    <Box p={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <MDSearchBar 
+          value={searchTerm}
+          onChange={handleSearch}
+          placeholder="Search wholesalers..."
+   
+        />
+        <MDButton onClick={handleCreateWholesaler}>
+          Create Wholesaler
+        </MDButton>
+      </Box>
+      <MDDataGrid rows={filteredRows} columns={columns} loading={loading} />
     </Box>
   );
 };

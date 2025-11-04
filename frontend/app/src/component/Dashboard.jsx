@@ -11,14 +11,14 @@ import {
   MenuItem,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useLocation, useNavigate, Outlet, Routes, Route } from 'react-router-dom';
+import { useLocation, useNavigate, Outlet, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './sidebar';
 import Statistics from "../layout/statistics"
 import Productview from '../layout/product/productview.jsx';
 import Wholesalerview from '../layout/wholesaler/wholesalerview.jsx';
 import Categoryview from '../layout/categories/categoryview.jsx';
 import Salesview from '../layout/sales/salesview.jsx';
-import Profile from '../layout/profile/profilepage.jsx';
+import Profilepage from '../layout/profile/profilepage.jsx';
 
 const drawerWidth = 240;
 
@@ -40,7 +40,7 @@ const DashboardLayout = ({ onLogout }) => {
     '/dashboard/salesview': 'Sales',
     '/dashboard/categoryview': 'Categories',
     '/dashboard/wholesalerview': 'Wholesalers',
-    '/dashboard/profile': 'Profile',
+    '/dashboard/profilepage': 'Profilepage',
     '/dashboard': 'Dashboard',
   };
 
@@ -52,7 +52,7 @@ const DashboardLayout = ({ onLogout }) => {
 
   const handleProfileClick = () => {
     handleMenuClose();
-    navigate('/profile');
+    navigate('/dashboard/profilepage');
   };
 
   const handleLogoutClick = () => {
@@ -241,19 +241,15 @@ const DashboardLayout = ({ onLogout }) => {
           overflowY: 'auto',
         }}>
           <Routes>
-          <Route path="/" element={<Statistics />} />
-          <Route path="statistics" element={<Statistics />} />
-          <Route path="productview" element={<Productview />} />
-          <Route path="salesview" element={<Salesview />} />
-          <Route path="categoryview" element={<Categoryview />} />
-          <Route path="wholesalerview" element={<Wholesalerview />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="dashboard/statistics" element={<Statistics />} />
-          <Route path="dashboard/productview" element={<Productview />} />
-          <Route path="dashboard/salesview" element={<Salesview />} />
-          <Route path="dashboard/categoryview" element={<Categoryview />} />
-            <Route path="dashboard/wholesalerview" element={<Wholesalerview />} />
-            <Route path="dashboard/profile" element={<Profile />} />
+            <Route path="/" element={<Statistics />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="productview" element={<Productview />} />
+            <Route path="salesview" element={<Salesview />} />
+            <Route path="categoryview" element={<Categoryview />} />
+            <Route path="wholesalerview" element={<Wholesalerview />} />
+            <Route path="profilepage" element={<Profilepage />} />
+            {/* Redirect any unmatched routes to the dashboard */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Box>
       </Box>

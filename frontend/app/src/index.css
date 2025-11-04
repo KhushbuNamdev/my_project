@@ -1,13 +1,13 @@
-/* fallback */
-body {
+fallback
+/* body {
   background-color: #fecaca;
   margin: 0;
  
-  /* linear gradient: top (0%) to bottom (100%) */
+
   background-image: linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%);
-  /* optional: make content readable on top */
+ 
   color: #111;
-}
+} */
 
 *{
   margin: 0%;

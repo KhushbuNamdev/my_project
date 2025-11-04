@@ -3,11 +3,12 @@ import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllUsers } from '../../Slice/userSlice';
 import MDDataGrid from '../../custom/MDdatagrid'; // ✅ adjust this path if needed
-
+import MDButton from '../../custom/MDbutton';
+import MDSearchBar from '../../custom/MDsearchbar';
 const Salesmanview = () => {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.user);
-
+const [searchTerm, setSearchTerm] = React.useState('');
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
@@ -48,9 +49,24 @@ const Salesmanview = () => {
     );
   }
 
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value.toLowerCase());
+  };
+
   return (
-    <Box sx={{ width: '100%' }}>
-      
+ <Box p={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <MDSearchBar 
+                value={searchTerm}
+                onChange={handleSearch}
+                placeholder="Search wholesalers..."
+             
+              />
+              <MDButton >
+                Create Salesman
+              </MDButton>
+            </Box>
 
       {/* ✅ Only shows users with role = salesman */}
       <MDDataGrid rows={rows} columns={columns} pageSize={5}
