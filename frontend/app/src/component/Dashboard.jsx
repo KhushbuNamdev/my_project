@@ -24,21 +24,24 @@ const drawerWidth = 240;
 
 const DashboardLayout = ({ onLogout }) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+  const toggleSidebar = () => setCollapsed(!collapsed);
 
   // Map path to title
   const pageTitles = {
-    '/statistics': 'Statistics',
-    '/productview': 'Products',
-    '/salesview': 'Sales',
-    '/categoryview': 'Categories',
-    '/wholesalerview': 'Wholesalers',
-    '/profile': 'Profile',
+    '/dashboard/statistics': 'Statistics',
+    '/dashboard/productview': 'Products',
+    '/dashboard/salesview': 'Sales',
+    '/dashboard/categoryview': 'Categories',
+    '/dashboard/wholesalerview': 'Wholesalers',
+    '/dashboard/profile': 'Profile',
+    '/dashboard': 'Dashboard',
   };
 
   const currentTitle = pageTitles[location.pathname] || 'Dashboard';
@@ -64,23 +67,56 @@ const DashboardLayout = ({ onLogout }) => {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-          bgcolor: 'error.main',
+          width: { 
+            xs: 'calc(100% - 32px)',
+            sm: `calc(100% - ${collapsed ? 112 : drawerWidth + 32}px)`
+          },
+          ml: { 
+            xs: '16px',
+            sm: collapsed ? '112px' : `${drawerWidth + 16}px`
+          },
+          mt: '16px',
+          borderRadius: '16px',
+          bgcolor: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          color: 'text.primary',
+          boxShadow: `
+            0 4px 20px 0 rgba(0, 0, 0, 0.1),
+            0 2px 10px 0 rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 0 rgba(255, 255, 255, 0.9)
+          `,
+          zIndex: 1299,
+          transition: (theme) =>
+            theme.transitions.create(['margin', 'width', 'transform'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: `
+              0 6px 30px 0 rgba(0, 0, 0, 0.12),
+              0 3px 15px 0 rgba(0, 0, 0, 0.08),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.9)
+            `,
+          },
         }}
       >
         <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {currentTitle}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2, display: { sm: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+              {currentTitle}
+            </Typography>
+          </Box>
 
           {/* Avatar dropdown */}
           <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
@@ -102,7 +138,15 @@ const DashboardLayout = ({ onLogout }) => {
       {/* Sidebar */}
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{
+          width: { sm: collapsed ? 80 : drawerWidth },
+          flexShrink: 0,
+          transition: (theme) =>
+            theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+        }}
       >
         <Drawer
           variant="temporary"
@@ -111,21 +155,52 @@ const DashboardLayout = ({ onLogout }) => {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              background: 'rgba(255, 255, 255, 0.7)',
+              backdropFilter: 'blur(10px)',
+              borderRight: '1px solid rgba(255, 255, 255, 0.8)',
+            },
           }}
         >
-          <Sidebar onLogout={handleLogoutClick} />
+          <Sidebar 
+            onLogout={handleLogoutClick} 
+            collapsed={collapsed} 
+            toggleSidebar={toggleSidebar} 
+          />
         </Drawer>
 
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            zIndex: 1300,
+            '& .MuiDrawer-paper': {
+              position: 'fixed',
+              top: '16px',
+              left: '16px',
+              width: collapsed ? 80 : drawerWidth,
+              height: 'calc(100vh - 32px)',
+              transition: (theme) =>
+                theme.transitions.create(['width', 'transform'], {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+              background: 'transparent',
+              border: 'none',
+              boxShadow: 'none',
+              overflow: 'hidden',
+              zIndex: 1300, // Ensure it's above other elements
+            },
           }}
           open
         >
-          <Sidebar onLogout={handleLogoutClick} />
+          <Sidebar 
+            onLogout={handleLogoutClick} 
+            collapsed={collapsed} 
+            toggleSidebar={toggleSidebar} 
+          />
         </Drawer>
       </Box>
 
@@ -134,12 +209,40 @@ const DashboardLayout = ({ onLogout }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
+          p: 0,
+          width: { 
+            xs: 'calc(100% - 32px)',
+            sm: `calc(100% - ${collapsed ? 112 : drawerWidth + 16}px)`
+          },
+          ml: { 
+            xs: '16px',
+            sm: collapsed ? '96px' : `${drawerWidth}px`
+          },
+          mt: '100px',
+          minHeight: 'calc(100vh - 116px)',
+          transition: (theme) =>
+            theme.transitions.create(['margin', 'width'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+          overflowX: 'hidden',
+          backgroundColor: 'transparent',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        <Routes>
+        <Box sx={{ 
+          height: '100%',
+          width: '100%',
+          p: 0,
+          pl: { xs: 2, sm: 3 },
+          pr: { xs: 2, sm: 3 },
+          pt: 3,
+          pb: 3,
+          position: 'relative',
+          overflowY: 'auto',
+        }}>
+          <Routes>
           <Route path="/" element={<Statistics />} />
           <Route path="statistics" element={<Statistics />} />
           <Route path="productview" element={<Productview />} />
@@ -147,7 +250,14 @@ const DashboardLayout = ({ onLogout }) => {
           <Route path="categoryview" element={<Categoryview />} />
           <Route path="wholesalerview" element={<Wholesalerview />} />
           <Route path="profile" element={<Profile />} />
-        </Routes>
+          <Route path="dashboard/statistics" element={<Statistics />} />
+          <Route path="dashboard/productview" element={<Productview />} />
+          <Route path="dashboard/salesview" element={<Salesview />} />
+          <Route path="dashboard/categoryview" element={<Categoryview />} />
+            <Route path="dashboard/wholesalerview" element={<Wholesalerview />} />
+            <Route path="dashboard/profile" element={<Profile />} />
+          </Routes>
+        </Box>
       </Box>
     </Box>
   );
