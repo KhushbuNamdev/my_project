@@ -7,8 +7,7 @@ import LoginPage from './Homepage/loginpage';
 import DashboardLayout from './component/Dashboard';
 import theme from './theme/theme';
 
-// Global styles for glassmorphism
-// document.body.style.background = 'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)';
+
 document.body.style.backgroundAttachment = 'fixed';
 document.body.style.minHeight = '100vh';
 document.body.style.margin = '0';
