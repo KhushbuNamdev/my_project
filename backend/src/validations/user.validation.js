@@ -11,10 +11,10 @@ const commonRules = {
     Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'in'] } }),
     Joi.string().allow('').optional()
   ).optional()
-  .messages({
-    'string.email': 'Please provide a valid email address',
-    'any.only': 'Please provide a valid email address',
-  }),
+    .messages({
+      'string.email': 'Please provide a valid email address',
+      'any.only': 'Please provide a valid email address',
+    }),
   phoneNumber: Joi.string()
     .pattern(/^\d{10}$/)
     .required()
@@ -153,6 +153,40 @@ export const updateUserValidation = Joi.object({
   name: Joi.string().min(2).max(50).messages({
     'string.min': 'Name must be at least 2 characters long',
     'string.max': 'Name cannot be longer than 50 characters',
+  }),
+  // Wholesaler specific fields
+  businessName: Joi.string().trim().messages({
+    'string.empty': 'Business name cannot be empty',
+  }),
+  adharNumber: Joi.string()
+    .pattern(/^\d{12}$/)
+    .allow('')
+    .messages({
+      'string.pattern.base': 'Aadhar number must be 12 digits',
+    }),
+  gstNumber: Joi.string()
+    .pattern(/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/)
+    .allow('')
+    .messages({
+      'string.pattern.base': 'Please provide a valid GST number',
+    }),
+  address: Joi.object({
+    street: Joi.string().trim().messages({
+      'string.empty': 'Street address cannot be empty',
+    }),
+    city: Joi.string().trim().messages({
+      'string.empty': 'City cannot be empty',
+    }),
+    state: Joi.string().trim().messages({
+      'string.empty': 'State cannot be empty',
+    }),
+    pincode: Joi.string()
+      .pattern(/^\d{6}$/)
+      .allow('')
+      .messages({
+        'string.pattern.base': 'Pincode must be 6 digits',
+      }),
+    country: Joi.string().default('India').trim(),
   }),
   email: Joi.string()
     .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })

@@ -3,11 +3,11 @@ import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
 
-const MDDataGrid = ({ rows, columns, pageSize = 5, height = 400 }) => {
+const MDDataGrid = ({ rows, columns, pageSize = 5,  }) => {
   return (
     <Box
       sx={{
-        height,
+       
         width: '100%',
         marginLeft: 0,
         '& .MuiDataGrid-main': {

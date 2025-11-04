@@ -1,38 +1,65 @@
 import React, { useEffect } from 'react';
-import { Button, TextField, Grid, Typography, CircularProgress } from '@mui/material';
+import { TextField, Grid, Typography, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import MDDialogBox from '../../custom/MDdailogbox';
-const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = null }) => {
+import MDButton from '../../custom/MDbutton';
 
+const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = null }) => {
   const validationSchema = Yup.object({
     name: Yup.string().required('Name is required'),
-    gstNumber: Yup.string().required('GST number is required'),
-    address: Yup.string().required('Address is required'),
-    phoneNumber: Yup.string()
-      .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
-      .required('Phone number is required'),
     businessName: Yup.string().required('Business name is required'),
+    gstNumber: Yup.string().required('GST number is required'),
     aadharNumber: Yup.string()
       .matches(/^[0-9]{12}$/, 'Aadhar number must be 12 digits')
       .required('Aadhar number is required'),
+    phoneNumber: Yup.string()
+      .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
+      .required('Phone number is required'),
+    street: Yup.string().required('Street is required'),
+    city: Yup.string().required('City is required'),
+    state: Yup.string().required('State is required'),
+    pincode: Yup.string()
+      .matches(/^[0-9]{6}$/, 'Pincode must be 6 digits')
+      .required('Pincode is required'),
+    country: Yup.string().required('Country is required'),
   });
 
   const formik = useFormik({
     initialValues: {
       name: '',
-      gstNumber: '',
-      address: '',
-      phoneNumber: '',
       businessName: '',
+      gstNumber: '',
       aadharNumber: '',
+      phoneNumber: '',
+      street: '',
+      city: '',
+      state: '',
+      pincode: '',
+      country: 'India', // default
       role: 'wholesaler',
     },
     validationSchema,
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
-        await onSubmit(values);
+        // ✅ format the data exactly as backend expects
+        const formattedValues = {
+          name: values.name,
+          businessName: values.businessName,
+          gstNumber: values.gstNumber,
+          aadharNumber: values.aadharNumber,
+          phoneNumber: values.phoneNumber,
+          role: 'wholesaler',
+          address: {
+            street: values.street,
+            city: values.city,
+            state: values.state,
+            pincode: values.pincode,
+            country: values.country,
+          },
+        };
+        await onSubmit(formattedValues);
         resetForm();
       } catch (err) {
         console.error('Error submitting form:', err);
@@ -43,26 +70,19 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
     enableReinitialize: true,
   });
 
-  // Reset form when dialog is opened/closed
+  // Reset form when dialog opens
   useEffect(() => {
-    if (open) {
-      formik.resetForm();
-    }
+    if (open) formik.resetForm();
   }, [open]);
 
   const dialogActions = (
     <>
-      <Button onClick={onClose} color="error" disabled={loading}>
-        Cancel
-      </Button>
-      <Button 
-        onClick={formik.handleSubmit} 
-        color="primary"
-        disabled={loading || !formik.isValid || !formik.dirty}
+      <MDButton
+        onClick={formik.handleSubmit}
         startIcon={loading ? <CircularProgress size={20} /> : null}
       >
         {loading ? 'Creating...' : 'Create'}
-      </Button>
+      </MDButton>
     </>
   );
 
@@ -75,8 +95,9 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
     >
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={2}>
+          {/* Name */}
           {/* <Grid item xs={12} md={6}> */}
-          <Grid size={{ xs:12 , md:6}}>
+          <Grid size = {{xs:12 , md:6}}>
             <TextField
               fullWidth
               id="name"
@@ -87,10 +108,12 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
               onBlur={formik.handleBlur}
               error={formik.touched.name && Boolean(formik.errors.name)}
               helperText={formik.touched.name && formik.errors.name}
-              margin="normal"
+           
             />
           </Grid>
-        <Grid size={{ xs:12 , md:6}}>
+
+          {/* Business Name */}
+          <Grid size = {{xs:12 , md:6}}>
             <TextField
               fullWidth
               id="businessName"
@@ -101,10 +124,12 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
               onBlur={formik.handleBlur}
               error={formik.touched.businessName && Boolean(formik.errors.businessName)}
               helperText={formik.touched.businessName && formik.errors.businessName}
-              margin="normal"
+             
             />
           </Grid>
-         <Grid size={{ xs:12 , md:6}}>
+
+          {/* GST Number */}
+        <Grid size = {{xs:12 , md:6}}>
             <TextField
               fullWidth
               id="gstNumber"
@@ -115,10 +140,12 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
               onBlur={formik.handleBlur}
               error={formik.touched.gstNumber && Boolean(formik.errors.gstNumber)}
               helperText={formik.touched.gstNumber && formik.errors.gstNumber}
-              margin="normal"
+             
             />
           </Grid>
-          <Grid size={{ xs:12 , md:6}}>
+
+          {/* Aadhar Number */}
+        <Grid size = {{xs:12 , md:6}}>
             <TextField
               fullWidth
               id="aadharNumber"
@@ -129,11 +156,12 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
               onBlur={formik.handleBlur}
               error={formik.touched.aadharNumber && Boolean(formik.errors.aadharNumber)}
               helperText={formik.touched.aadharNumber && formik.errors.aadharNumber}
-              margin="normal"
-              slotProps={{ maxLength: 12 }}
+            
             />
           </Grid>
-           <Grid size={{ xs:12 , md:6}}>
+
+          {/* Phone Number */}
+         <Grid size = {{xs:12 , md:6}}>
             <TextField
               fullWidth
               id="phoneNumber"
@@ -144,27 +172,91 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
               onBlur={formik.handleBlur}
               error={formik.touched.phoneNumber && Boolean(formik.errors.phoneNumber)}
               helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
-              margin="normal"
-              slotProps={{ maxLength: 10 }}
+            
             />
           </Grid>
-        <Grid size={{ xs:12 , md:6}}>
+
+          {/* Street */}
+        <Grid size = {{xs:12 , md:6}}>
             <TextField
               fullWidth
-              id="address"
-              name="address"
-              label="Address"
-              multiline
-            //   rows={3}
-              value={formik.values.address}
+              id="street"
+              name="street"
+              label="Street"
+              value={formik.values.street}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.touched.address && Boolean(formik.errors.address)}
-              helperText={formik.touched.address && formik.errors.address}
-              margin="normal"
+              error={formik.touched.street && Boolean(formik.errors.street)}
+              helperText={formik.touched.street && formik.errors.street}
+            
+            />
+          </Grid>
+
+          {/* City */}
+      <Grid size = {{xs:12 , md:6}}>
+            <TextField
+              fullWidth
+              id="city"
+              name="city"
+              label="City"
+              value={formik.values.city}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.city && Boolean(formik.errors.city)}
+              helperText={formik.touched.city && formik.errors.city}
+            
+            />
+          </Grid>
+
+          {/* State */}
+          <Grid size = {{xs:12 , md:6}}>
+            <TextField
+              fullWidth
+              id="state"
+              name="state"
+              label="State"
+              value={formik.values.state}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.state && Boolean(formik.errors.state)}
+              helperText={formik.touched.state && formik.errors.state}
+            
+            />
+          </Grid>
+
+          {/* Pincode */}
+          <Grid size = {{xs:12 , md:6}}>
+            <TextField
+              fullWidth
+              id="pincode"
+              name="pincode"
+              label="Pincode"
+              value={formik.values.pincode}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.pincode && Boolean(formik.errors.pincode)}
+              helperText={formik.touched.pincode && formik.errors.pincode}
+            
+            />
+          </Grid>
+
+          {/* Country */}
+      <Grid size = {{xs:12 , md:6}}>
+            <TextField
+              fullWidth
+              id="country"
+              name="country"
+              label="Country"
+              value={formik.values.country}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.country && Boolean(formik.errors.country)}
+              helperText={formik.touched.country && formik.errors.country}
+            
             />
           </Grid>
         </Grid>
+
         {error && (
           <Typography color="error" variant="body2" sx={{ mt: 2 }}>
             {error}
