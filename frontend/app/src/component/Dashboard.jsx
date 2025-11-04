@@ -62,20 +62,19 @@ const DashboardLayout = ({ onLogout }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', }}>
       {/* Top Navbar */}
       <AppBar
-        position="fixed"
+        position="fixed" 
         sx={{
-          width: { 
-            xs: 'calc(100% - 32px)',
-            sm: `calc(100% - ${collapsed ? 112 : drawerWidth + 32}px)`
+          
+           width: { 
+            xs: 'calc(100% - 48px)',
+            sm: `calc(100% - ${collapsed ? 116 : drawerWidth + 48}px)`
           },
-          ml: { 
-            xs: '16px',
-            sm: collapsed ? '112px' : `${drawerWidth + 16}px`
-          },
+          mr: '16px',
           mt: '16px',
+        
           borderRadius: '16px',
           bgcolor: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(20px)',
@@ -210,14 +209,13 @@ const DashboardLayout = ({ onLogout }) => {
         sx={{
           flexGrow: 1,
           p: 0,
-          width: { 
+          
+         width: { 
             xs: 'calc(100% - 32px)',
-            sm: `calc(100% - ${collapsed ? 112 : drawerWidth + 16}px)`
+            sm: `calc(100% - ${collapsed ? 104 : drawerWidth + 32}px)`
           },
-          ml: { 
-            xs: '16px',
-            sm: collapsed ? '96px' : `${drawerWidth}px`
-          },
+          ml:"15px",
+          pl: { xs: 0, sm: '16px' },
           mt: '100px',
           minHeight: 'calc(100vh - 116px)',
           transition: (theme) =>
@@ -235,8 +233,8 @@ const DashboardLayout = ({ onLogout }) => {
           height: '100%',
           width: '100%',
           p: 0,
-          pl: { xs: 2, sm: 3 },
-          pr: { xs: 2, sm: 3 },
+          // pl: { xs: 0.1, sm: 0 },
+          pr: { xs: 2, sm: 2 },
           pt: 3,
           pb: 3,
           position: 'relative',

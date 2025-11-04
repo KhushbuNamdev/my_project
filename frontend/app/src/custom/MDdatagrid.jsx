@@ -9,6 +9,10 @@ const MDDataGrid = ({ rows, columns, pageSize = 5, height = 400 }) => {
       sx={{
         height,
         width: '100%',
+        marginLeft: 0,
+        '& .MuiDataGrid-main': {
+          paddingLeft: 0,
+        },
         borderRadius: '16px',
         background: 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(20px)',
@@ -23,6 +27,8 @@ const MDDataGrid = ({ rows, columns, pageSize = 5, height = 400 }) => {
           backgroundColor: 'transparent',
           color: 'rgba(0, 0, 0, 0.87)',
           border: 'none',
+          margin: 0,
+          padding: 0,
           '& .MuiDataGrid-columnHeaders': {
             background: 'rgba(255, 255, 255, 0.6)',
             backdropFilter: 'blur(12px)',
