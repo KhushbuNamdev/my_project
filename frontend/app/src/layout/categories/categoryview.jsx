@@ -15,24 +15,37 @@ import { fetchCategories } from "../../Slice/categorySlice";
 import MDSearchBar from "../../custom/MDsearchbar";
 import MDDataGrid from "../../custom/MDdatagrid";
 import AddCategory from "./AddCategory";
-
-const CategoryView = ({ onEdit, onDelete }) => {
+import EditCategory from "./editcategory"; // ✅ new import
+import DeleteCategoryDialog from "./deletecategory";
+const CategoryView = () => {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.category);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
+
+  const [selectedCategory, setSelectedCategory] = useState(null);
+ const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  const handleDialogClose = () => {
-    setOpenAddDialog(false);
+  const handleAddSuccess = () => {
+    dispatch(fetchCategories());
   };
 
-  const handleDialogSuccess = () => {
-    // ✅ When category added successfully, refetch
+  const handleEditSuccess = () => {
     dispatch(fetchCategories());
+  };
+const handleDeleteClick = (category) => {
+    setSelectedCategory(category);
+    setOpenDeleteDialog(true);
+  };
+  const handleEditClick = (category) => {
+    setSelectedCategory(category);
+    setOpenEditDialog(true);
   };
 
   const columns = [
@@ -60,6 +73,7 @@ const CategoryView = ({ onEdit, onDelete }) => {
         </Typography>
       ),
     },
+    
     {
       field: "actions",
       headerName: "Actions",
@@ -69,14 +83,29 @@ const CategoryView = ({ onEdit, onDelete }) => {
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           <Tooltip title="Edit">
-            <IconButton color="primary" onClick={() => onEdit?.(params.row)}>
+            <IconButton color="primary" onClick={() => handleEditClick(params.row)}>
               <EditIcon />
             </IconButton>
           </Tooltip>
+
+
+
+
           <Tooltip title="Delete">
-            <IconButton color="error" onClick={() => onDelete?.(params.row)}>
-              <DeleteIcon />
-            </IconButton>
+
+
+
+            <IconButton
+                color="error"
+                onClick={() => handleDeleteClick(params.row)}
+              >
+                <DeleteIcon />
+              </IconButton>
+
+
+
+
+
           </Tooltip>
         </Box>
       ),
@@ -126,14 +155,35 @@ const CategoryView = ({ onEdit, onDelete }) => {
         <MDDataGrid rows={filteredCategories} columns={columns} pageSize={10} />
       )}
 
-      {/* ✅ AddCategory Dialog */}
+      {/* ✅ Add Dialog */}
       <AddCategory
         open={openAddDialog}
-        onClose={handleDialogClose}
-        onSuccess={handleDialogSuccess} // refetch on success
+        onClose={() => setOpenAddDialog(false)}
+        onSuccess={handleAddSuccess}
       />
+
+      {/* ✅ Edit Dialog */}
+      <EditCategory
+        open={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        onSuccess={handleEditSuccess}
+        category={selectedCategory}
+      />
+
+{/* Delete Dialog */}
+      {openDeleteDialog && (
+        <DeleteCategoryDialog
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+          categoryId={selectedCategory?._id}
+        />
+      )}
+
+
+
     </Box>
   );
 };
 
 export default CategoryView;
+
