@@ -57,13 +57,28 @@ export const updateExistingProduct = createAsyncThunk(
   'products/update',
   async ({ id, updateData }, { rejectWithValue }) => {
     try {
+      console.log('Updating product with ID:', id);
+      console.log('Update data:', updateData);
+      
       const response = await productApi.updateProduct(id, updateData);
+      
       if (response.success) {
+        console.log('Update successful, response:', response);
         return response.data;
       }
-      return rejectWithValue(response.error || 'Failed to update product');
+      
+      console.error('Update failed, response:', response);
+      return rejectWithValue({
+        message: response.error || 'Failed to update product',
+        data: response.data
+      });
+      
     } catch (error) {
-      return rejectWithValue(error.message || 'Failed to update product');
+      console.error('Update error:', error);
+      return rejectWithValue({
+        message: error.response?.data?.message || error.message || 'Failed to update product',
+        data: error.response?.data
+      });
     }
   }
 );
@@ -71,14 +86,26 @@ export const updateExistingProduct = createAsyncThunk(
 export const removeProduct = createAsyncThunk(
   'products/delete',
   async (id, { rejectWithValue }) => {
+    if (!id) {
+      return rejectWithValue('Product ID is required');
+    }
+    
     try {
       const response = await productApi.deleteProduct(id);
-      if (response.success) {
-        return id;
+      console.log('Delete API response:', response);
+      
+      if (response && response.success) {
+        return { id, ...response.data };
       }
-      return rejectWithValue(response.error || 'Failed to delete product');
+      
+      return rejectWithValue(response?.error || 'Failed to delete product');
     } catch (error) {
-      return rejectWithValue(error.message || 'Failed to delete product');
+      console.error('Delete product error:', error);
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to delete product'
+      );
     }
   }
 );

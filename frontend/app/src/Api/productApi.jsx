@@ -62,12 +62,13 @@ export const productApi = {
   // Update a product
   updateProduct: async (id, updateData) => {
     try {
-      const { data } = await api.patch(`${PRODUCTS_API}/${id}`, updateData);
+      const { data } = await api.put(`${PRODUCTS_API}/${id}`, updateData);
       return { success: true, data };
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || error.message 
+        error: error.response?.data?.message || error.message,
+        data: error.response?.data
       };
     }
   },

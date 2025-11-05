@@ -1,10 +1,7 @@
 
-
-
-
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllProducts } from "../../Slice/productSlice";
+import { fetchAllProducts, removeProduct } from "../../Slice/productSlice";
 import {
   Box,
   Typography,
@@ -12,6 +9,7 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  Snackbar,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -19,6 +17,8 @@ import MDDataGrid from "../../custom/MDdatagrid";
 import MDButton from "../../custom/MDbutton";
 import MDSearchbar from "../../custom/MDsearchbar";
 import AddProduct from "./addproduct";
+import DeleteProductDialog from "./deleteproduct";
+import EditProduct from "./editproduct";
 
 const ProductView = () => {
   const dispatch = useDispatch();
@@ -30,6 +30,20 @@ const ProductView = () => {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    product: null,
+  });
+
+  const [editDialog, setEditDialog] = useState({
+    open: false,
+    product: null,
+  });
 
   // Load products initially
   useEffect(() => {
@@ -47,9 +61,106 @@ const ProductView = () => {
     return categoryIds.map((cat) => cat.name).join(", ");
   };
 
-  // Edit/Delete placeholders
-  const handleEdit = (product) => console.log("Edit clicked for:", product);
-  const handleDelete = (product) => console.log("Delete clicked for:", product);
+  // Handle edit button click
+  const handleEditClick = (product) => {
+    setEditDialog({
+      open: true,
+      product: {
+        ...product,
+        // Ensure categoryIds is an array of IDs (not objects)
+        categoryIds: Array.isArray(product.categoryIds) 
+          ? product.categoryIds.map(cat => typeof cat === 'object' ? cat._id : cat)
+          : []
+      }
+    });
+  };
+  
+  // Handle successful product update
+  // const handleProductUpdated = (updatedProduct) => {
+  //   // Update the local state with the updated product
+  //   setProducts(prev => 
+  //     prev.map(p => p._id === updatedProduct._id ? {
+  //       ...updatedProduct,
+  //       // Ensure categories are properly formatted
+  //       categoryIds: Array.isArray(updatedProduct.categoryIds) 
+  //         ? updatedProduct.categoryIds.map(cat => ({
+  //             _id: typeof cat === 'object' ? cat._id : cat,
+  //             name: typeof cat === 'object' 
+  //               ? (cat.name || 'Uncategorized') 
+  //               : (categories.find(c => c._id === cat)?.name || 'Loading...')
+  //           }))
+  //         : []
+  //     } : p)
+  //   );
+  // };
+const handleProductUpdated = async (updatedProduct) => {
+  try {
+    // Show success message
+    setSnackbar({
+      open: true,
+      message: 'Product updated successfully!',
+      severity: 'success'
+    });
+
+    // Close the edit dialog
+    setEditDialog({ open: false, product: null });
+
+    // Refresh the products list from the server
+    const result = await dispatch(fetchAllProducts()).unwrap();
+    const updatedProducts = Array.isArray(result) ? result : result?.products || [];
+    setProducts(updatedProducts);
+
+  } catch (error) {
+    console.error('Error updating product:', error);
+    setSnackbar({
+      open: true,
+      message: 'Failed to refresh product list',
+      severity: 'error'
+    });
+  }
+};
+  // Handle delete button click
+  const handleDeleteClick = (product) => {
+    setDeleteDialog({
+      open: true,
+      product,
+    });
+  };
+
+  // Handle actual deletion
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.product || !deleteDialog.product._id) {
+      console.error('Cannot delete: Product ID is missing');
+      setDeleteDialog({ open: false, product: null });
+      return;
+    }
+    
+    try {
+      const productId = deleteDialog.product._id;
+      console.log('Attempting to delete product with ID:', productId);
+      
+      const result = await dispatch(removeProduct(productId)).unwrap();
+      console.log('Delete result:', result);
+      
+      // Update local state to remove the deleted product
+      setProducts(prev => prev.filter(p => p._id !== productId));
+      
+      // Close the dialog
+      setDeleteDialog({ open: false, product: null });
+      
+      // Show success message
+      // You might want to add a snackbar here
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+      // You might want to show an error message here
+      setDeleteDialog({ open: false, product: null });
+    }
+  };
+
+  // Close delete dialog
+  const handleDeleteClose = () => {
+    setDeleteDialog({ open: false, product: null });
+  };
 
   // Columns for DataGrid
   const columns = [
@@ -74,7 +185,7 @@ const ProductView = () => {
             <IconButton
               color="primary"
               size="small"
-              onClick={() => handleEdit(params.row)}
+              onClick={() => handleEditClick(params.row)}
             >
               <EditIcon fontSize="small" />
             </IconButton>
@@ -83,7 +194,7 @@ const ProductView = () => {
             <IconButton
               color="error"
               size="small"
-              onClick={() => handleDelete(params.row)}
+              onClick={() => handleDeleteClick(params.row)}
             >
               <DeleteIcon fontSize="small" />
             </IconButton>
@@ -109,11 +220,20 @@ const ProductView = () => {
   });
 
   // Map filtered products to DataGrid rows
-  const rows = filteredProducts.map((product, index) => ({
-    id: product._id || product.id || `row-${index}`,
-    name: product.name || "Unnamed Product",
-    categoryIds: product.categoryIds || [],
-  }));
+  const rows = filteredProducts.map((product, index) => {
+    // Ensure we have a valid ID for each product
+    const productId = product._id || product.id;
+    if (!productId) {
+      console.warn('Product is missing an ID:', product);
+    }
+    
+    return {
+      id: productId || `invalid-${index}-${Date.now()}`,
+      _id: productId, // Keep the original _id for reference
+      name: product.name || "Unnamed Product",
+      categoryIds: product.categoryIds || [],
+    };
+  });
 
   // Callback to add new product to local state
   const handleProductAdded = (newProduct) => {
@@ -187,11 +307,39 @@ const ProductView = () => {
       </Box>
 
       <MDDataGrid rows={rows} columns={columns} pageSize={10} />
-
+      
       <AddProduct
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
-        onSuccess={handleProductAdded} // pass callback
+        onSuccess={handleProductAdded}
+      />
+      
+      <DeleteProductDialog
+        open={deleteDialog.open}
+        onClose={handleDeleteClose}
+        onConfirm={handleDeleteConfirm}
+        productName={deleteDialog.product?.name || 'this product'}
+      />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert 
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+          severity={snackbar.severity}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      
+      <EditProduct
+        open={editDialog.open}
+        onClose={() => setEditDialog({ open: false, product: null })}
+        product={editDialog.product}
+        onSuccess={handleProductUpdated}
       />
     </Box>
   );
