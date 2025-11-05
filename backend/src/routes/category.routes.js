@@ -173,7 +173,7 @@ router.put(
 router.delete(
   '/:id',
   protect,
-  authorize('admin'),
+  authorize('superadmin'),
   deleteCategoryController
 );
 
