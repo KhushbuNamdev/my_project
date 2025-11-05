@@ -1,54 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Box,
   Typography,
   CircularProgress,
   Alert,
-  Paper,
   Button,
   IconButton,
   Tooltip,
-} from '@mui/material';
-import MDSearchBar from '../../custom/MDsearchbar';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { fetchCategories } from '../../Slice/categorySlice';
-import MDDataGrid from "../../custom/MDdatagrid"
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { fetchCategories } from "../../Slice/categorySlice";
+import MDSearchBar from "../../custom/MDsearchbar";
+import MDDataGrid from "../../custom/MDdatagrid";
+import AddCategory from "./AddCategory";
 
 const CategoryView = ({ onEdit, onDelete }) => {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.category);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openAddDialog, setOpenAddDialog] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
+  const handleDialogClose = () => {
+    setOpenAddDialog(false);
+  };
+
+  const handleDialogSuccess = () => {
+    // ✅ When category added successfully, refetch
+    dispatch(fetchCategories());
+  };
+
   const columns = [
+    { field: "name", headerName: "Category Name", flex: 1, minWidth: 200 },
     {
-      field: 'name',
-      headerName: 'Category Name',
-      flex: 1,
-      minWidth: 200,
-    },
-    {
-      field: 'description',
-      headerName: 'Description',
+      field: "description",
+      headerName: "Description",
       flex: 2,
       minWidth: 300,
       renderCell: (params) => (
         <Typography
           variant="body2"
           sx={{
-            whiteSpace: 'normal',
-            lineHeight: '1.2',
-            maxHeight: '3.6em',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
+            whiteSpace: "normal",
+            lineHeight: "1.2",
+            maxHeight: "3.6em",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
             WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
+            WebkitBoxOrient: "vertical",
           }}
         >
           {params.value}
@@ -56,27 +61,20 @@ const CategoryView = ({ onEdit, onDelete }) => {
       ),
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
+      field: "actions",
+      headerName: "Actions",
       width: 120,
       sortable: false,
-      filterable: false,
-      align: 'center',
+      align: "center",
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           <Tooltip title="Edit">
-            <IconButton
-              color="primary"
-              onClick={() => onEdit && onEdit(params.row)}
-            >
+            <IconButton color="primary" onClick={() => onEdit?.(params.row)}>
               <EditIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton
-              color="error"
-              onClick={() => onDelete && onDelete(params.row)}
-            >
+            <IconButton color="error" onClick={() => onDelete?.(params.row)}>
               <DeleteIcon />
             </IconButton>
           </Tooltip>
@@ -85,37 +83,23 @@ const CategoryView = ({ onEdit, onDelete }) => {
     },
   ];
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ mb: 2 }}>
-        {error}
-      </Alert>
-    );
-  }
-
-  const filteredCategories = categories?.filter(category => 
-    category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    category.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredCategories =
+    categories?.filter(
+      (category) =>
+        category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        category.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
 
   return (
     <Box>
       <Box
         sx={{
           mb: 3,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 2
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
         }}
       >
         <MDSearchBar
@@ -126,19 +110,29 @@ const CategoryView = ({ onEdit, onDelete }) => {
         <Button
           variant="contained"
           color="primary"
-
+          onClick={() => setOpenAddDialog(true)}
         >
           Add New Category
         </Button>
       </Box>
 
-      <MDDataGrid
-        rows={filteredCategories}
-        columns={columns}
-        pageSize={10}
+      {loading && categories.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : (
+        <MDDataGrid rows={filteredCategories} columns={columns} pageSize={10} />
+      )}
+
+      {/* ✅ AddCategory Dialog */}
+      <AddCategory
+        open={openAddDialog}
+        onClose={handleDialogClose}
+        onSuccess={handleDialogSuccess} // refetch on success
       />
-      </Box>
-  
+    </Box>
   );
 };
 
