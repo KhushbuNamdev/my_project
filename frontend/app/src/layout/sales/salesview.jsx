@@ -8,12 +8,15 @@ import MDDataGrid from '../../custom/MDdatagrid';
 import MDButton from '../../custom/MDbutton';
 import MDSearchBar from '../../custom/MDsearchbar';
 import CreateSalesman from './ceratesalesman';
+import DeleteSalesDialog from './deletesales';
 
 const Salesmanview = () => {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.user);
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedSalesId, setSelectedSalesId] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
@@ -47,21 +50,28 @@ const Salesmanview = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  const handleDeleteSuccess = () => {
+    setSnackbar({
+      open: true,
+      message: 'Salesperson deleted successfully!',
+      severity: 'success'
+    });
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedSalesId(null);
+  };
+
   const handleEdit = (row) => {
     // Handle edit action
     console.log('Edit row:', row);
     // You can implement edit functionality here
   };
 
-  const handleDelete = (id) => {
-    // Handle delete action
-    console.log('Delete id:', id);
-    // You can implement delete functionality here
-    setSnackbar({
-      open: true,
-      message: 'Delete functionality will be implemented here',
-      severity: 'info'
-    });
+  const handleDeleteClick = (id) => {
+    setSelectedSalesId(id);
+    setDeleteDialogOpen(true);
   };
 
   // Filter only users whose role is "sales"
@@ -82,7 +92,7 @@ const Salesmanview = () => {
           <IconButton size="small" color="primary" onClick={() => handleEdit(params.row)}>
             <EditIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" color="error" onClick={() => handleDelete(params.row.id)}>
+          <IconButton size="small" color="error" onClick={() => handleDeleteClick(params.row.id)}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -162,6 +172,13 @@ const Salesmanview = () => {
         onSubmit={handleCreateSalesman}
         loading={loading}
         error={error}
+      />
+
+      <DeleteSalesDialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        salesId={selectedSalesId}
+        onDeleteSuccess={handleDeleteSuccess}
       />
       
       {/* Snackbar for notifications */}

@@ -1,36 +1,31 @@
-import React from 'react';
-import {
-  Button,
-  Typography,
-  Box,
-  CircularProgress,
-} from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useDispatch } from 'react-redux';
 import { deleteUser, getAllUsers } from '../../Slice/userSlice';
-import MDDialogBox from '../../custom/MDdailogbox'; // ✅ Custom dialog import
+import MDDialogBox from '../../custom/MDdailogbox';
 import MDButton from '../../custom/MDbutton';
 
-const DeleteWholesalerDialog = ({ open, onClose, wholesalerId, onDeleteSuccess }) => {
+const DeleteSalesDialog = ({ open, onClose, salesId, onDeleteSuccess }) => {
   const dispatch = useDispatch();
-  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (e) => {
     e.preventDefault();
     try {
       setIsDeleting(true);
-      await dispatch(deleteUser(wholesalerId)).unwrap();
-
-      // ✅ Refresh wholesaler list
+      await dispatch(deleteUser(salesId)).unwrap();
+      
+      // Refresh sales list
       await dispatch(getAllUsers());
 
-      // ✅ Notify parent
+      // Notify parent
       onDeleteSuccess();
 
-      // ✅ Close dialog
+      // Close dialog
       onClose();
     } catch (error) {
-      console.error('Error deleting wholesaler:', error);
+      console.error('Error deleting salesperson:', error);
     } finally {
       setIsDeleting(false);
     }
@@ -40,31 +35,29 @@ const DeleteWholesalerDialog = ({ open, onClose, wholesalerId, onDeleteSuccess }
     <MDDialogBox
       open={open}
       onClose={onClose}
-      title="Delete Wholesaler"
-      actions={null} // we'll define custom actions below
+      title="Delete Salesperson"
+      actions={null}
       maxWidth="sm"
       fullWidth
     >
       <Box
         component="form"
         onSubmit={handleDelete}
-        sx={{ display: 'flex', flexDirection: 'column',  }}
+        sx={{ display: 'flex', flexDirection: 'column' }}
       >
-        {/* Warning message */}
-        <Box display="flex" alignItems="center" gap={2}>
+        <Box display="flex" alignItems="center">
           <WarningIcon color="error" fontSize="large" />
           <Typography variant="body1">
-            Are you sure you want to delete this wholesaler? <br />
+            Are you sure you want to delete this salesperson? <br />
             <strong>This action cannot be undone.</strong>
           </Typography>
         </Box>
 
-        {/* Buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-          
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 1 }}>
+         
           <MDButton
             type="submit"
-         
+            color="error"
             disabled={isDeleting}
             startIcon={isDeleting ? <CircularProgress size={20} /> : null}
           >
@@ -76,4 +69,4 @@ const DeleteWholesalerDialog = ({ open, onClose, wholesalerId, onDeleteSuccess }
   );
 };
 
-export default DeleteWholesalerDialog;
+export default DeleteSalesDialog;
