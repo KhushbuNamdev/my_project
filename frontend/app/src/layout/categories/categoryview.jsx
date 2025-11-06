@@ -120,7 +120,7 @@ const handleDeleteClick = (category) => {
     ) || [];
 
   return (
-    <Box>
+        <Box p={3}>
       <Box
         sx={{
           mb: 3,
@@ -128,7 +128,7 @@ const handleDeleteClick = (category) => {
           justifyContent: "space-between",
           alignItems: "center",
           flexWrap: "wrap",
-          gap: 2,
+        
         }}
       >
         <MDSearchBar

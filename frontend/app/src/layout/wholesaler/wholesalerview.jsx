@@ -235,7 +235,7 @@ const Wholesalerview = () => {
           placeholder="Search wholesalers..."
         />
         <MDButton onClick={handleOpenDialog} variant="contained" color="primary">
-          Create Wholesaler
+           Add Wholesaler
         </MDButton>
       </Box>
 

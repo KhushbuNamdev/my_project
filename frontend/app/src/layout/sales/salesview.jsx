@@ -134,7 +134,7 @@ const Salesmanview = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box p={3}>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         
 

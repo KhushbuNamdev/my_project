@@ -1,12 +1,7 @@
 import React from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography
-} from '@mui/material';
+import { Button, Typography, Box } from '@mui/material';
+import MDDialogBox from '../../custom/MDdailogbox'; // 🔥 Use your custom MDDialogBox
+import MDButton from '../../custom/MDbutton';
 
 const DeleteProductDialog = ({ 
   open, 
@@ -15,26 +10,29 @@ const DeleteProductDialog = ({
   productName = 'this product' 
 }) => {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Confirm Delete</DialogTitle>
-      <DialogContent>
+    <MDDialogBox
+      open={open}
+      onClose={onClose}
+      title="Confirm Delete"
+      actions={
+        <>
+         
+          <MDButton
+            onClick={onConfirm} 
+        
+           
+          >
+            Delete
+          </MDButton>
+        </>
+      }
+    >
+      <Box sx={{ p: 1 }}>
         <Typography variant="body1">
           Are you sure you want to delete <strong>{productName}</strong>? This action cannot be undone.
         </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
-        </Button>
-        <Button 
-          onClick={onConfirm} 
-          color="error"
-          variant="contained"
-        >
-          Delete
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </MDDialogBox>
   );
 };
 

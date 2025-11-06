@@ -36,6 +36,26 @@ const createProductSchema = Joi.object({
   status: Joi.string().valid('draft', 'published', 'archived').default('draft')
     .messages({
       'any.only': 'Status must be either draft, published, or archived'
+    }),
+  features: Joi.array().items(
+    Joi.object({
+      index: Joi.number().required()
+        .messages({
+          'number.base': 'Feature index must be a number',
+          'any.required': 'Feature index is required'
+        }),
+      feature: Joi.string().required().trim()
+        .messages({
+          'string.empty': 'Feature description cannot be empty',
+          'any.required': 'Feature description is required'
+        })
+    })
+  ).optional(),
+  gstPercentage: Joi.number().min(0).max(100).default(0)
+    .messages({
+      'number.min': 'GST percentage cannot be negative',
+      'number.max': 'GST percentage cannot exceed 100%',
+      'number.base': 'GST percentage must be a number'
     })
 });
 
@@ -64,6 +84,24 @@ const updateProductSchema = Joi.object({
   status: Joi.string().valid('draft', 'published', 'archived')
     .messages({
       'any.only': 'Status must be either draft, published, or archived'
+    }),
+  features: Joi.array().items(
+    Joi.object({
+      index: Joi.number()
+        .messages({
+          'number.base': 'Feature index must be a number'
+        }),
+      feature: Joi.string().trim()
+        .messages({
+          'string.empty': 'Feature description cannot be empty'
+        })
+    })
+  ).optional(),
+  gstPercentage: Joi.number().min(0).max(100)
+    .messages({
+      'number.min': 'GST percentage cannot be negative',
+      'number.max': 'GST percentage cannot exceed 100%',
+      'number.base': 'GST percentage must be a number'
     })
 }).min(1).message('At least one field is required for update');
 

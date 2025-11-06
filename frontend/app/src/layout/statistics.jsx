@@ -88,8 +88,7 @@ const Statistics = () => {
 
   return (
     <Box sx={{ 
-      p: 3, 
-      background: 'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
+  
       minHeight: '100vh',
       backgroundAttachment: 'fixed'
     }}>

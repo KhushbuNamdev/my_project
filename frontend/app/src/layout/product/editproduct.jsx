@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Button,
   FormControl,
@@ -18,7 +14,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { updateExistingProduct } from '../../Slice/productSlice';
 import { fetchCategories } from '../../Slice/categorySlice';
-
+import MDDialogBox from '../../custom/MDdailogbox'; // 🔥 Use your custom MDDialogBox
+import MDButton from "../../custom/MDbutton"
 const EditProduct = ({ 
   open, 
   onClose, 
@@ -88,13 +85,11 @@ const EditProduct = ({
     try {
       setLoading(true);
       
-      // Prepare the update data according to backend expectations
       const updateData = {
         name: formData.name.trim(),
         categoryIds: formData.categoryIds
       };
       
-      // Log the data being sent for debugging
       console.log('Sending update request with data:', {
         id: product._id,
         ...updateData
@@ -114,8 +109,7 @@ const EditProduct = ({
       if (onSuccess) {
         onSuccess(result);
       }
-      
-      // Close the dialog after a short delay to show success message
+
       setTimeout(() => {
         onClose();
       }, 1000);
@@ -142,63 +136,63 @@ const EditProduct = ({
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-        <DialogTitle>Edit Product</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Product Name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              fullWidth
-              margin="normal"
-              required
-            />
+      <MDDialogBox
+        open={open}
+        onClose={onClose}
+        title="Edit Product"
+        actions={
+          <>
             
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Categories</InputLabel>
-              <Select
-                multiple
-                value={formData.categoryIds}
-                onChange={handleCategoryChange}
-                label="Categories"
-                renderValue={(selected) => {
-                  const selectedCategories = selected.map(id => 
-                    categories.find(cat => cat._id === id)?.name || id
-                  );
-                  return selectedCategories.join(', ');
-                }}
-              >
-                {categoriesLoading ? (
-                  <Box display="flex" justifyContent="center" p={2}>
-                    <CircularProgress size={24} />
-                  </Box>
-                ) : (
-                  categories.map((category) => (
-                    <MenuItem key={category._id} value={category._id}>
-                      {category.name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            variant="contained" 
-            color="primary"
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Update Product'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <MDButton 
+              onClick={handleSubmit} 
+             
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Update Product'}
+            </MDButton>
+          </>
+        }
+      >
+        <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            label="Product Name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel>Categories</InputLabel>
+            <Select
+              multiple
+              value={formData.categoryIds}
+              onChange={handleCategoryChange}
+              label="Categories"
+              renderValue={(selected) => {
+                const selectedCategories = selected.map(id => 
+                  categories.find(cat => cat._id === id)?.name || id
+                );
+                return selectedCategories.join(', ');
+              }}
+            >
+              {categoriesLoading ? (
+                <Box display="flex" justifyContent="center" p={2}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : (
+                categories.map((category) => (
+                  <MenuItem key={category._id} value={category._id}>
+                    {category.name}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+        </Box>
+      </MDDialogBox>
 
       <Snackbar
         open={snackbar.open}
