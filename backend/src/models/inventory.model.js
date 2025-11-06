@@ -7,7 +7,7 @@ const inventorySchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
         required: [true, 'Product ID is required'],
-        unique: true
+        index: true // Add non-unique index for better query performance
     },
     quantity: {
         type: Number,
@@ -21,7 +21,7 @@ const inventorySchema = new Schema({
         min: [0, 'Used quantity cannot be negative'],
         default: 0,
         validate: {
-            validator: function(v) {
+            validator: function (v) {
                 return v <= this.quantity;
             },
             message: 'Used quantity cannot exceed total quantity'
@@ -29,7 +29,7 @@ const inventorySchema = new Schema({
     },
     availableQuantity: {
         type: Number,
-        default: function() {
+        default: function () {
             return this.quantity - this.usedQuantity;
         },
         min: [0, 'Available quantity cannot be negative']
@@ -62,9 +62,9 @@ const inventorySchema = new Schema({
 });
 
 // Update availableQuantity before saving
-inventorySchema.pre('save', function(next) {
+inventorySchema.pre('save', function (next) {
     this.availableQuantity = this.quantity - this.usedQuantity;
-    
+
     // Update status based on available quantity
     if (this.availableQuantity <= 0) {
         this.status = 'out_of_stock';
@@ -73,7 +73,7 @@ inventorySchema.pre('save', function(next) {
     } else {
         this.status = 'in_stock';
     }
-    
+
     next();
 });
 
@@ -90,20 +90,67 @@ inventorySchema.index({ productId: 1 }, { unique: true });
 inventorySchema.index({ status: 1 });
 inventorySchema.index({ availableQuantity: 1 });
 
-// Static method to update stock
-inventorySchema.statics.updateStock = async function(productId, quantityChange, isUsed = false) {
+// Static method to update stock for a specific inventory record
+inventorySchema.statics.updateStock = async function (inventoryId, quantityChange, isUsed = false) {
     const updateField = isUsed ? 'usedQuantity' : 'quantity';
-    const inventory = await this.findOneAndUpdate(
-        { productId },
-        { 
-            $inc: { [updateField]: quantityChange },
-            $set: { lastRestocked: new Date() }
-        },
-        { new: true, upsert: true }
-    );
-    
-    return inventory;
+
+    // Find the specific inventory record by ID
+    const inventory = await this.findById(inventoryId);
+
+    if (!inventory) {
+        throw new Error('Inventory record not found');
+    }
+
+    // Update the specific inventory record
+    inventory[updateField] += quantityChange;
+    inventory.lastRestocked = new Date();
+
+    // This will trigger the pre-save hook to update availableQuantity and status
+    return await inventory.save();
 };
+
+// Method to get current stock level for a product (sum of all inventory records)
+inventorySchema.statics.getProductStock = async function (productId) {
+    // Convert productId to ObjectId if it's a string
+    const productObjectId = typeof productId === 'string'
+        ? new mongoose.Types.ObjectId(productId)
+        : productId;
+
+    const result = await this.aggregate([
+        {
+            $match: {
+                productId: productObjectId,
+                isActive: { $ne: false } // Only count active inventory records
+            }
+        },
+        {
+            $group: {
+                _id: '$productId',
+                totalQuantity: { $sum: '$quantity' },
+                totalUsed: { $sum: '$usedQuantity' },
+                available: { $sum: { $subtract: ['$quantity', '$usedQuantity'] } },
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    if (result.length === 0) {
+        return {
+            totalQuantity: 0,
+            totalUsed: 0,
+            available: 0,
+            count: 0
+        };
+    }
+
+    return result[0];
+};
+
+// Add a compound index for better query performance
+inventorySchema.index({ productId: 1, createdAt: -1 });
+
+// Add compound index for better query performance
+inventorySchema.index({ productId: 1, createdAt: -1 });
 
 const Inventory = mongoose.model('Inventory', inventorySchema);
 

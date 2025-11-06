@@ -7,10 +7,15 @@ import mongoose from 'mongoose';
  * @param {Object} inventoryData - Inventory data
  * @returns {Promise<Object>} Created inventory record
  */
+/**
+ * Create a new inventory record
+ * @param {Object} inventoryData - Inventory data
+ * @returns {Promise<Object>} Created inventory record
+ */
 const createInventory = async (inventoryData) => {
   const session = await mongoose.startSession();
   session.startTransaction();
-  
+
   try {
     // Check if product exists and is not deleted
     const product = await Product.findOne({
@@ -22,18 +27,9 @@ const createInventory = async (inventoryData) => {
       throw new Error('Product not found or has been deleted');
     }
 
-    // Check if inventory already exists for this product
-    const existingInventory = await Inventory.findOne({
-      productId: inventoryData.productId
-    }).session(session);
-
-    if (existingInventory) {
-      throw new Error('Inventory already exists for this product');
-    }
-
     // Calculate available quantity
     const availableQuantity = (inventoryData.quantity || 0) - (inventoryData.usedQuantity || 0);
-    
+
     // Determine status based on available quantity
     let status = 'out_of_stock';
     if (availableQuantity > 0) {
@@ -44,17 +40,39 @@ const createInventory = async (inventoryData) => {
       ...inventoryData,
       availableQuantity,
       status,
-      lastRestocked: new Date()
+      lastRestocked: new Date(),
+      isActive: true
     });
 
     await inventory.save({ session });
+
+    // Get the total stock for this product (including the newly created inventory)
+    const productId = typeof inventoryData.productId === 'string'
+      ? new mongoose.Types.ObjectId(inventoryData.productId)
+      : inventoryData.productId;
+
+    const stockInfo = await Inventory.getProductStock(productId);
+
     await session.commitTransaction();
-    
+
     // Populate product details when returning
-    const result = await Inventory.findById(inventory._id).populate('productId', 'name');
-    return result;
+    const result = await Inventory.findById(inventory._id)
+      .populate('productId', 'name')
+      .lean();
+
+    // Add the total stock information to the response
+    return {
+      ...result,
+      productStock: {
+        totalQuantity: stockInfo.totalQuantity,
+        totalUsed: stockInfo.totalUsed,
+        available: stockInfo.available,
+        totalRecords: stockInfo.count
+      }
+    };
   } catch (error) {
     await session.abortTransaction();
+    console.error('Error creating inventory:', error);
     throw error;
   } finally {
     session.endSession();
@@ -117,7 +135,7 @@ const getAllInventory = async ({
 const updateInventory = async (id, updateData) => {
   const session = await mongoose.startSession();
   session.startTransaction();
-  
+
   try {
     const inventory = await Inventory.findById(id).session(session);
     if (!inventory) {
@@ -134,7 +152,7 @@ const updateInventory = async (id, updateData) => {
     // Recalculate available quantity if quantity or usedQuantity is updated
     if ('quantity' in updateData || 'usedQuantity' in updateData) {
       inventory.availableQuantity = inventory.quantity - inventory.usedQuantity;
-      
+
       // Update status based on available quantity
       if (inventory.availableQuantity <= 0) {
         inventory.status = 'out_of_stock';
@@ -152,7 +170,7 @@ const updateInventory = async (id, updateData) => {
 
     await inventory.save({ session });
     await session.commitTransaction();
-    
+
     // Populate product details when returning
     const result = await Inventory.findById(inventory._id).populate('productId', 'name');
     return result;
