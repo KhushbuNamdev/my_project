@@ -88,6 +88,46 @@ productSchema.virtual('categories', {
     foreignField: '_id'
 });
 
+// Virtual for inventory summary
+productSchema.virtual('inventorySummary', {
+    ref: 'Inventory',
+    localField: '_id',
+    foreignField: 'productId',
+    options: {
+        match: { isActive: { $ne: false } },
+        select: 'quantity usedQuantity status'
+    }
+});
+
+// Virtual for total quantity (not stored in DB)
+productSchema.virtual('totalQuantity').get(async function () {
+    const Inventory = mongoose.model('Inventory');
+    const result = await Inventory.aggregate([
+        {
+            $match: {
+                productId: this._id,
+                isActive: { $ne: false }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalQuantity: { $sum: '$quantity' },
+                totalUsed: { $sum: '$usedQuantity' },
+                available: { $sum: { $subtract: ['$quantity', '$usedQuantity'] } },
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    return result[0] || {
+        totalQuantity: 0,
+        totalUsed: 0,
+        available: 0,
+        count: 0
+    };
+});
+
 // Middleware to check if referenced categories exist
 productSchema.pre('save', async function (next) {
     if (this.isModified('categoryIds')) {
@@ -102,6 +142,10 @@ productSchema.pre('save', async function (next) {
     }
     next();
 });
+
+// Add toJSON and toObject options to include virtuals
+productSchema.set('toJSON', { virtuals: true });
+productSchema.set('toObject', { virtuals: true });
 
 const Product = mongoose.model('Product', productSchema);
 

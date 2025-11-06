@@ -4,10 +4,7 @@ import {
   fetchAllProducts,
   removeProduct,
 } from "../../Slice/productSlice";
-import {
-  fetchAllInventory,
-  createNewInventory,
-} from "../../Slice/inventorySlice";
+import { createNewInventory } from "../../Slice/inventorySlice";
 import {
   Box,
   Typography,
@@ -40,7 +37,6 @@ const ProductView = () => {
     (state) => state.product
   );
   const { categories = [] } = useSelector((state) => state.category);
-  const inventoryItems = useSelector((state) => state.inventory?.data || []);
 
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,41 +61,20 @@ const ProductView = () => {
     product: null,
   });
 
-  // 🔹 Fetch products and inventory
+  // 🔹 Fetch products
   useEffect(() => {
     dispatch(fetchAllProducts())
       .unwrap()
       .then((res) => {
-        setProducts(Array.isArray(res) ? res : res?.products || []);
+        setProducts(Array.isArray(res) ? res : res?.products || res?.data || []);
       })
       .catch(() => setProducts([]));
-
-    dispatch(fetchAllInventory());
   }, [dispatch]);
 
   // 🔹 Format category names
   const formatCategories = (categoryIds) => {
     if (!categoryIds || !Array.isArray(categoryIds)) return "No categories";
     return categoryIds.map((cat) => cat.name).join(", ");
-  };
-
-  // 🔹 Get quantity for each product from inventory
-  const getProductQuantity = (productId) => {
-    if (!inventoryItems || !Array.isArray(inventoryItems)) {
-      console.log('No inventory items found or invalid structure');
-      return 0;
-    }
-    
-    const item = inventoryItems.find((inv) => {
-      // Check if productId is an object with _id or a direct ID
-      const invProductId = inv.productId?._id || inv.productId;
-      return invProductId === productId;
-    });
-    
-    // Return the quantity from the inventory item
-    const quantity = item ? item.quantity : 0;
-    console.log('Product ID:', productId, 'Found quantity:', quantity);
-    return quantity;
   };
 
   // 🔹 Edit Product
@@ -118,7 +93,7 @@ const ProductView = () => {
   };
 
   // 🔹 Update Success Handler
-  const handleProductUpdated = async (updatedProduct) => {
+  const handleProductUpdated = async () => {
     try {
       setSnackbar({
         open: true,
@@ -127,8 +102,8 @@ const ProductView = () => {
       });
       setEditDialog({ open: false, product: null });
       const result = await dispatch(fetchAllProducts()).unwrap();
-      setProducts(Array.isArray(result) ? result : result?.products || []);
-    } catch (error) {
+      setProducts(Array.isArray(result) ? result : result?.products || result?.data || []);
+    } catch {
       setSnackbar({
         open: true,
         message: "Failed to refresh product list",
@@ -154,7 +129,7 @@ const ProductView = () => {
         severity: "success",
       });
       setDeleteDialog({ open: false, product: null });
-    } catch (error) {
+    } catch {
       setSnackbar({
         open: true,
         message: "Failed to delete product",
@@ -194,7 +169,12 @@ const ProductView = () => {
         })
       ).unwrap();
 
-      await dispatch(fetchAllInventory());
+      // Refresh products (inventory data comes with them)
+      await dispatch(fetchAllProducts())
+        .unwrap()
+        .then((res) => {
+          setProducts(Array.isArray(res) ? res : res?.products || res?.data || []);
+        });
 
       setSnackbar({
         open: true,
@@ -204,7 +184,7 @@ const ProductView = () => {
       setOpenQuantityDialog(false);
       setQuantity("");
       setSelectedProduct(null);
-    } catch (error) {
+    } catch {
       setSnackbar({
         open: true,
         message: "Failed to add quantity",
@@ -237,12 +217,12 @@ const ProductView = () => {
       ),
     },
     {
-      field: "quantity",
-      headerName: "Quantity",
-      flex: 0.5,
+      field: "inventory",
+      headerName: "Total Quantity",
+      flex: 0.7,
       renderCell: (params) => (
         <Typography variant="body2">
-          {getProductQuantity(params.row._id)}
+          {params.row.inventory?.totalQuantity ?? 0}
         </Typography>
       ),
     },
@@ -311,7 +291,7 @@ const ProductView = () => {
     name: product.name || "Unnamed Product",
     categoryIds: product.categoryIds || [],
     gstPercentage: product.gstPercentage || 0,
-    quantity: getProductQuantity(product._id),
+    inventory: product.inventory || { totalQuantity: 0 },
   }));
 
   // 🔹 Add Product Success Handler
@@ -330,6 +310,7 @@ const ProductView = () => {
                 : categories.find((c) => c._id === cat)?.name || "Unknown",
           }))
         : [],
+      inventory: newProduct.inventory || { totalQuantity: 0 },
     };
     setProducts((prev) => [formatted, ...prev]);
   };
