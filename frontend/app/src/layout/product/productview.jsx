@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllProducts, removeProduct } from "../../Slice/productSlice";
+import {
+  fetchAllProducts,
+  removeProduct,
+} from "../../Slice/productSlice";
+import {
+  fetchAllInventory,
+  createNewInventory,
+} from "../../Slice/inventorySlice";
 import {
   Box,
   Typography,
@@ -10,6 +17,11 @@ import {
   Tooltip,
   Snackbar,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -23,29 +35,37 @@ import EditProduct from "./editproduct";
 
 const ProductView = () => {
   const dispatch = useDispatch();
+
   const { products: initialProducts = [], loading, error } = useSelector(
     (state) => state.product
   );
   const { categories = [] } = useSelector((state) => state.category);
+  const inventoryItems = useSelector((state) => state.inventory?.data || []);
 
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openQuantityDialog, setOpenQuantityDialog] = useState(false);
+  const [quantity, setQuantity] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
+
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     product: null,
   });
+
   const [editDialog, setEditDialog] = useState({
     open: false,
     product: null,
   });
 
-  // Fetch all products initially
+  // 🔹 Fetch products and inventory
   useEffect(() => {
     dispatch(fetchAllProducts())
       .unwrap()
@@ -53,12 +73,33 @@ const ProductView = () => {
         setProducts(Array.isArray(res) ? res : res?.products || []);
       })
       .catch(() => setProducts([]));
+
+    dispatch(fetchAllInventory());
   }, [dispatch]);
 
-  // Format category names
+  // 🔹 Format category names
   const formatCategories = (categoryIds) => {
     if (!categoryIds || !Array.isArray(categoryIds)) return "No categories";
     return categoryIds.map((cat) => cat.name).join(", ");
+  };
+
+  // 🔹 Get quantity for each product from inventory
+  const getProductQuantity = (productId) => {
+    if (!inventoryItems || !Array.isArray(inventoryItems)) {
+      console.log('No inventory items found or invalid structure');
+      return 0;
+    }
+    
+    const item = inventoryItems.find((inv) => {
+      // Check if productId is an object with _id or a direct ID
+      const invProductId = inv.productId?._id || inv.productId;
+      return invProductId === productId;
+    });
+    
+    // Return the quantity from the inventory item
+    const quantity = item ? item.quantity : 0;
+    console.log('Product ID:', productId, 'Found quantity:', quantity);
+    return quantity;
   };
 
   // 🔹 Edit Product
@@ -76,7 +117,7 @@ const ProductView = () => {
     });
   };
 
-  // 🔹 Product updated successfully
+  // 🔹 Update Success Handler
   const handleProductUpdated = async (updatedProduct) => {
     try {
       setSnackbar({
@@ -127,14 +168,49 @@ const ProductView = () => {
     setDeleteDialog({ open: false, product: null });
   };
 
-  // 🔹 Add Quantity Button
+  // 🔹 Open Quantity Dialog
   const handleAddQuantity = (product) => {
-    // You can later integrate quantity logic here (dialog or inline edit)
-    setSnackbar({
-      open: true,
-      message: `Add quantity clicked for ${product.name}`,
-      severity: "info",
-    });
+    setSelectedProduct(product);
+    setQuantity("");
+    setOpenQuantityDialog(true);
+  };
+
+  // 🔹 Submit Quantity
+  const handleQuantitySubmit = async () => {
+    if (!selectedProduct || !quantity || isNaN(quantity) || quantity <= 0) {
+      setSnackbar({
+        open: true,
+        message: "Please enter a valid whole number for quantity",
+        severity: "error",
+      });
+      return;
+    }
+
+    try {
+      await dispatch(
+        createNewInventory({
+          productId: selectedProduct._id,
+          quantity: parseInt(quantity, 10),
+        })
+      ).unwrap();
+
+      await dispatch(fetchAllInventory());
+
+      setSnackbar({
+        open: true,
+        message: "Quantity added successfully!",
+        severity: "success",
+      });
+      setOpenQuantityDialog(false);
+      setQuantity("");
+      setSelectedProduct(null);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Failed to add quantity",
+        severity: "error",
+      });
+    }
   };
 
   // 🔹 Table Columns
@@ -160,56 +236,62 @@ const ProductView = () => {
         </Typography>
       ),
     },
-   {
-  field: "actions",
-  headerName: "Actions",
-  flex: 0.8,
-  renderCell: (params) => (
-    <Box display="flex" alignItems="center" gap={1}>
-      {/* 🔹 Small Add Quantity Button using MDButton */}
-      
+    {
+      field: "quantity",
+      headerName: "Quantity",
+      flex: 0.5,
+      renderCell: (params) => (
+        <Typography variant="body2">
+          {getProductQuantity(params.row._id)}
+        </Typography>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (params) => (
+        <Box display="flex" alignItems="center" gap={1}>
+          <Tooltip title="Edit">
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={() => handleEditClick(params.row)}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
 
-      <Tooltip title="Edit">
-        <IconButton
-          color="primary"
-          size="small"
-          onClick={() => handleEditClick(params.row)}
-        >
-          <EditIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton
+              color="error"
+              size="small"
+              onClick={() => handleDeleteClick(params.row)}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
 
-      <Tooltip title="Delete">
-        <IconButton
-          color="error"
-          size="small"
-          onClick={() => handleDeleteClick(params.row)}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Add Quantity">
-        <MDButton
-          onClick={() => handleAddQuantity(params.row)}
-          sx={{
-            px: 1.5,
-            py: 0.3,
-            fontSize: "0.7rem",
-            minWidth: "auto",
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            mt:1
-          }}
-        >
-          <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
-          Add quantity
-        </MDButton>
-      </Tooltip>
-    </Box>
-  ),
-},
-
+          <Tooltip title="Add Quantity">
+            <MDButton
+              onClick={() => handleAddQuantity(params.row)}
+              sx={{
+                px: 1.5,
+                py: 0.3,
+                fontSize: "0.7rem",
+                minWidth: "auto",
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+              Add
+            </MDButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
   ];
 
   // 🔹 Search Filter
@@ -222,16 +304,17 @@ const ProductView = () => {
     return nameMatch || categoryMatch;
   });
 
-  // 🔹 Format rows
+  // 🔹 Format Rows
   const rows = filteredProducts.map((product, index) => ({
     id: product._id || `temp-${index}`,
     _id: product._id,
     name: product.name || "Unnamed Product",
     categoryIds: product.categoryIds || [],
     gstPercentage: product.gstPercentage || 0,
+    quantity: getProductQuantity(product._id),
   }));
 
-  // 🔹 Add Product success handler
+  // 🔹 Add Product Success Handler
   const handleProductAdded = (newProduct) => {
     if (!newProduct) return;
     const formatted = {
@@ -251,6 +334,7 @@ const ProductView = () => {
     setProducts((prev) => [formatted, ...prev]);
   };
 
+  // 🔹 Loading and Error States
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -269,6 +353,7 @@ const ProductView = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Top Bar */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <MDSearchbar
           placeholder="Search products..."
@@ -279,6 +364,7 @@ const ProductView = () => {
         <MDButton onClick={() => setOpenAddDialog(true)}>Add Product</MDButton>
       </Box>
 
+      {/* Data Grid */}
       <MDDataGrid rows={rows} columns={columns} pageSize={10} />
 
       {/* Add Product Dialog */}
@@ -296,18 +382,44 @@ const ProductView = () => {
         productName={deleteDialog.product?.name || "this product"}
       />
 
+      {/* Quantity Dialog */}
+      <Dialog
+        open={openQuantityDialog}
+        onClose={() => setOpenQuantityDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Add Quantity</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Quantity"
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            inputProps={{ min: 1, step: 1 }}
+            margin="dense"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenQuantityDialog(false)}>Cancel</Button>
+          <Button onClick={handleQuantitySubmit} variant="contained">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Snackbar */}
       <Snackbar
-  open={snackbar.open}
-  autoHideDuration={3000}
-  onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-  anchorOrigin={{ vertical: "bottom", horizontal: "right" }} // 👈 Added this line
->
-  <Alert severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
-    {snackbar.message}
-  </Alert>
-</Snackbar>
-
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       {/* Edit Product Dialog */}
       <EditProduct
