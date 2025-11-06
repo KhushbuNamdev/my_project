@@ -39,7 +39,10 @@ const productSchema = new Schema({
     features: [{
         index: {
             type: Number,
-            required: [true, 'Feature index is required']
+            default: function () {
+                // Start index from 0
+                return this.parent().features?.indexOf(this) ?? 0;
+            }
         },
         feature: {
             type: String,
@@ -65,6 +68,18 @@ productSchema.index({ status: 1 });
 productSchema.index({ categoryIds: 1 });
 productSchema.index({ 'features.index': 1 });
 productSchema.index({ gstPercentage: 1 });
+
+// Pre-save hook to ensure features have proper sequential 0-based indices
+productSchema.pre('save', function (next) {
+    if (this.isModified('features') && Array.isArray(this.features)) {
+        this.features = this.features.map((feature, index) => ({
+            ...feature,
+            index: index, // Always set index to array position (0, 1, 2, ...)
+            feature: feature.feature?.trim()
+        }));
+    }
+    next();
+});
 
 // Virtual for categories
 productSchema.virtual('categories', {

@@ -32,7 +32,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
     name: "",
     categoryIds: [],
     gstPercentage: 0,
-    features: [{ index: 1, feature: "" }],
+    features: [""],
   });
 
   const [loading, setLoading] = useState(false);
@@ -51,23 +51,16 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
     setProductData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFeatureChange = (index, field, value) => {
+  const handleFeatureChange = (index, value) => {
     const updatedFeatures = [...productData.features];
-    updatedFeatures[index] = {
-      ...updatedFeatures[index],
-      [field]: field === "index" ? parseInt(value) || 0 : value,
-    };
+    updatedFeatures[index] = value;
     setProductData((prev) => ({ ...prev, features: updatedFeatures }));
   };
 
   const addFeature = () => {
-    const newIndex =
-      productData.features.length > 0
-        ? Math.max(...productData.features.map((f) => f.index)) + 1
-        : 1;
     setProductData((prev) => ({
       ...prev,
-      features: [...prev.features, { index: newIndex, feature: "" }],
+      features: [...prev.features, ""],
     }));
   };
 
@@ -95,7 +88,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
     }
 
     const hasEmptyFeatures = productData.features.some(
-      (f) => !f.feature.trim()
+      (f) => !f.trim()
     );
     if (hasEmptyFeatures) {
       setSnackbar({
@@ -114,10 +107,10 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
         categoryIds: productData.categoryIds,
         gstPercentage: parseFloat(productData.gstPercentage) || 0,
         features: productData.features
-          .filter((f) => f.feature.trim() !== "")
-          .map((f) => ({
-            index: f.index,
-            feature: f.feature.trim(),
+          .filter((f) => f.trim() !== "")
+          .map((f, i) => ({
+            index: i + 1,
+            feature: f.trim(),
           })),
       };
 
@@ -133,7 +126,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
         name: "",
         categoryIds: [],
         gstPercentage: 0,
-        features: [{ index: 1, feature: "" }],
+        features: [""],
       });
 
       if (onSuccess) {
@@ -258,26 +251,11 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                 alignItems="center"
                 sx={{ mb: 2 }}
               >
-                <Grid item xs={2}>
+                <Grid item xs={11}>
                   <TextField
-                    label="Index"
-                    type="number"
-                    value={feature.index}
-                    onChange={(e) =>
-                      handleFeatureChange(index, "index", e.target.value)
-                    }
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 1 }}
-                  />
-                </Grid>
-                <Grid item xs={9}>
-                  <TextField
-                    label="Feature Description"
-                    value={feature.feature}
-                    onChange={(e) =>
-                      handleFeatureChange(index, "feature", e.target.value)
-                    }
+                    label={`Feature ${index + 1}`}
+                    value={feature}
+                    onChange={(e) => handleFeatureChange(index, e.target.value)}
                     fullWidth
                     size="small"
                     required

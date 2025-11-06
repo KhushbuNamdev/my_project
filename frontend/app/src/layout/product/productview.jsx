@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllProducts, removeProduct } from "../../Slice/productSlice";
@@ -10,9 +9,11 @@ import {
   IconButton,
   Tooltip,
   Snackbar,
+  Button,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import MDDataGrid from "../../custom/MDdatagrid";
 import MDButton from "../../custom/MDbutton";
 import MDSearchbar from "../../custom/MDsearchbar";
@@ -39,13 +40,12 @@ const ProductView = () => {
     open: false,
     product: null,
   });
-
   const [editDialog, setEditDialog] = useState({
     open: false,
     product: null,
   });
 
-  // Load products initially
+  // Fetch all products initially
   useEffect(() => {
     dispatch(fetchAllProducts())
       .unwrap()
@@ -55,114 +55,89 @@ const ProductView = () => {
       .catch(() => setProducts([]));
   }, [dispatch]);
 
-  // Format categoryIds into names
+  // Format category names
   const formatCategories = (categoryIds) => {
     if (!categoryIds || !Array.isArray(categoryIds)) return "No categories";
     return categoryIds.map((cat) => cat.name).join(", ");
   };
 
-  // Handle edit button click
+  // 🔹 Edit Product
   const handleEditClick = (product) => {
     setEditDialog({
       open: true,
       product: {
         ...product,
-        // Ensure categoryIds is an array of IDs (not objects)
-        categoryIds: Array.isArray(product.categoryIds) 
-          ? product.categoryIds.map(cat => typeof cat === 'object' ? cat._id : cat)
-          : []
-      }
-    });
-  };
-  
-  // Handle successful product update
-  // const handleProductUpdated = (updatedProduct) => {
-  //   // Update the local state with the updated product
-  //   setProducts(prev => 
-  //     prev.map(p => p._id === updatedProduct._id ? {
-  //       ...updatedProduct,
-  //       // Ensure categories are properly formatted
-  //       categoryIds: Array.isArray(updatedProduct.categoryIds) 
-  //         ? updatedProduct.categoryIds.map(cat => ({
-  //             _id: typeof cat === 'object' ? cat._id : cat,
-  //             name: typeof cat === 'object' 
-  //               ? (cat.name || 'Uncategorized') 
-  //               : (categories.find(c => c._id === cat)?.name || 'Loading...')
-  //           }))
-  //         : []
-  //     } : p)
-  //   );
-  // };
-const handleProductUpdated = async (updatedProduct) => {
-  try {
-    // Show success message
-    setSnackbar({
-      open: true,
-      message: 'Product updated successfully!',
-      severity: 'success'
-    });
-
-    // Close the edit dialog
-    setEditDialog({ open: false, product: null });
-
-    // Refresh the products list from the server
-    const result = await dispatch(fetchAllProducts()).unwrap();
-    const updatedProducts = Array.isArray(result) ? result : result?.products || [];
-    setProducts(updatedProducts);
-
-  } catch (error) {
-    console.error('Error updating product:', error);
-    setSnackbar({
-      open: true,
-      message: 'Failed to refresh product list',
-      severity: 'error'
-    });
-  }
-};
-  // Handle delete button click
-  const handleDeleteClick = (product) => {
-    setDeleteDialog({
-      open: true,
-      product,
+        categoryIds: Array.isArray(product.categoryIds)
+          ? product.categoryIds.map((cat) =>
+              typeof cat === "object" ? cat._id : cat
+            )
+          : [],
+      },
     });
   };
 
-  // Handle actual deletion
-  const handleDeleteConfirm = async () => {
-    if (!deleteDialog.product || !deleteDialog.product._id) {
-      console.error('Cannot delete: Product ID is missing');
-      setDeleteDialog({ open: false, product: null });
-      return;
+  // 🔹 Product updated successfully
+  const handleProductUpdated = async (updatedProduct) => {
+    try {
+      setSnackbar({
+        open: true,
+        message: "Product updated successfully!",
+        severity: "success",
+      });
+      setEditDialog({ open: false, product: null });
+      const result = await dispatch(fetchAllProducts()).unwrap();
+      setProducts(Array.isArray(result) ? result : result?.products || []);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Failed to refresh product list",
+        severity: "error",
+      });
     }
-    
+  };
+
+  // 🔹 Delete Product
+  const handleDeleteClick = (product) => {
+    setDeleteDialog({ open: true, product });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.product || !deleteDialog.product._id) return;
     try {
       const productId = deleteDialog.product._id;
-      console.log('Attempting to delete product with ID:', productId);
-      
-      const result = await dispatch(removeProduct(productId)).unwrap();
-      console.log('Delete result:', result);
-      
-      // Update local state to remove the deleted product
-      setProducts(prev => prev.filter(p => p._id !== productId));
-      
-      // Close the dialog
+      await dispatch(removeProduct(productId)).unwrap();
+      setProducts((prev) => prev.filter((p) => p._id !== productId));
+      setSnackbar({
+        open: true,
+        message: "Product deleted successfully!",
+        severity: "success",
+      });
       setDeleteDialog({ open: false, product: null });
-      
-      // Show success message
-      // You might want to add a snackbar here
     } catch (error) {
-      console.error('Failed to delete product:', error);
-      // You might want to show an error message here
+      setSnackbar({
+        open: true,
+        message: "Failed to delete product",
+        severity: "error",
+      });
       setDeleteDialog({ open: false, product: null });
     }
   };
 
-  // Close delete dialog
   const handleDeleteClose = () => {
     setDeleteDialog({ open: false, product: null });
   };
 
-  // Columns for DataGrid
+  // 🔹 Add Quantity Button
+  const handleAddQuantity = (product) => {
+    // You can later integrate quantity logic here (dialog or inline edit)
+    setSnackbar({
+      open: true,
+      message: `Add quantity clicked for ${product.name}`,
+      severity: "info",
+    });
+  };
+
+  // 🔹 Table Columns
   const columns = [
     { field: "name", headerName: "Product Name", flex: 1 },
     {
@@ -176,111 +151,109 @@ const handleProductUpdated = async (updatedProduct) => {
       ),
     },
     {
-      field: "actions",
-      headerName: "Actions",
+      field: "gstPercentage",
+      headerName: "GST (%)",
       flex: 0.5,
       renderCell: (params) => (
-        <Box display="flex" gap={1}>
-          <Tooltip title="Edit">
-            <IconButton
-              color="primary"
-              size="small"
-              onClick={() => handleEditClick(params.row)}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton
-              color="error"
-              size="small"
-              onClick={() => handleDeleteClick(params.row)}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <Typography variant="body2">
+          {params.value ? `${params.value}%` : "0%"}
+        </Typography>
       ),
     },
+   {
+  field: "actions",
+  headerName: "Actions",
+  flex: 0.8,
+  renderCell: (params) => (
+    <Box display="flex" alignItems="center" gap={1}>
+      {/* 🔹 Small Add Quantity Button using MDButton */}
+      
+
+      <Tooltip title="Edit">
+        <IconButton
+          color="primary"
+          size="small"
+          onClick={() => handleEditClick(params.row)}
+        >
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+
+      <Tooltip title="Delete">
+        <IconButton
+          color="error"
+          size="small"
+          onClick={() => handleDeleteClick(params.row)}
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Add Quantity">
+        <MDButton
+          onClick={() => handleAddQuantity(params.row)}
+          sx={{
+            px: 1.5,
+            py: 0.3,
+            fontSize: "0.7rem",
+            minWidth: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            mt:1
+          }}
+        >
+          <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+          Add quantity
+        </MDButton>
+      </Tooltip>
+    </Box>
+  ),
+},
+
   ];
 
-  // Filter products based on search
+  // 🔹 Search Filter
   const filteredProducts = products.filter((product) => {
     const searchLower = searchQuery.toLowerCase();
-    const productName = product.name || "";
-    const productCategories = Array.isArray(product.categoryIds)
-      ? product.categoryIds
-      : [];
-    return (
-      productName.toLowerCase().includes(searchLower) ||
-      productCategories.some(
-        (cat) => cat?.name?.toLowerCase().includes(searchLower)
-      )
+    const nameMatch = product.name?.toLowerCase().includes(searchLower);
+    const categoryMatch = product.categoryIds?.some((cat) =>
+      cat?.name?.toLowerCase().includes(searchLower)
     );
+    return nameMatch || categoryMatch;
   });
 
-  // Map filtered products to DataGrid rows
-  const rows = filteredProducts.map((product, index) => {
-    // Ensure we have a valid ID for each product
-    const productId = product._id || product.id;
-    if (!productId) {
-      console.warn('Product is missing an ID:', product);
-    }
-    
-    return {
-      id: productId || `invalid-${index}-${Date.now()}`,
-      _id: productId, // Keep the original _id for reference
-      name: product.name || "Unnamed Product",
-      categoryIds: product.categoryIds || [],
-    };
-  });
+  // 🔹 Format rows
+  const rows = filteredProducts.map((product, index) => ({
+    id: product._id || `temp-${index}`,
+    _id: product._id,
+    name: product.name || "Unnamed Product",
+    categoryIds: product.categoryIds || [],
+    gstPercentage: product.gstPercentage || 0,
+  }));
 
-  // Callback to add new product to local state
+  // 🔹 Add Product success handler
   const handleProductAdded = (newProduct) => {
-    // Ensure we have valid product data
     if (!newProduct) return;
-
-    // Log the incoming product data for debugging
-    console.log('New product received:', newProduct);
-
-    // Extract the name from the server response
-    // Check for different possible name fields in the response
-    const productName = newProduct.name || newProduct.product?.name || newProduct.data?.name || 'New Product';
-
-    // Create a properly formatted product object
-    const formattedProduct = {
+    const formatted = {
       ...newProduct,
-      // Ensure we have a valid ID
-      _id: newProduct._id || newProduct.id || `temp-${Date.now()}`,
-      // Use the extracted name or fallback to 'New Product'
-      name: productName,
-      // Handle categories - use the ones from the server if available, otherwise map them
-      categoryIds: Array.isArray(newProduct.categoryIds) 
-        ? newProduct.categoryIds.map(cat => ({
-            _id: typeof cat === 'object' ? cat._id : cat,
-            name: typeof cat === 'object' ? (cat.name || 'Uncategorized') : 
-                  (categories.find(c => c._id === cat)?.name || 'Loading...')
+      _id: newProduct._id || `temp-${Date.now()}`,
+      name: newProduct.name || "New Product",
+      categoryIds: Array.isArray(newProduct.categoryIds)
+        ? newProduct.categoryIds.map((cat) => ({
+            _id: typeof cat === "object" ? cat._id : cat,
+            name:
+              typeof cat === "object"
+                ? cat.name
+                : categories.find((c) => c._id === cat)?.name || "Unknown",
           }))
-        : []
+        : [],
     };
-
-    console.log('Formatted product:', formattedProduct);
-
-    // Update the products list, ensuring no duplicates
-    setProducts(prev => [
-      formattedProduct,
-      ...prev.filter(p => p._id !== formattedProduct._id)
-    ]);
+    setProducts((prev) => [formatted, ...prev]);
   };
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="60vh"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
         <CircularProgress />
       </Box>
     );
@@ -307,34 +280,36 @@ const handleProductUpdated = async (updatedProduct) => {
       </Box>
 
       <MDDataGrid rows={rows} columns={columns} pageSize={10} />
-      
+
+      {/* Add Product Dialog */}
       <AddProduct
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
         onSuccess={handleProductAdded}
       />
-      
+
+      {/* Delete Product Dialog */}
       <DeleteProductDialog
         open={deleteDialog.open}
         onClose={handleDeleteClose}
         onConfirm={handleDeleteConfirm}
-        productName={deleteDialog.product?.name || 'this product'}
+        productName={deleteDialog.product?.name || "this product"}
       />
 
+      {/* Snackbar */}
       <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-      >
-        <Alert 
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
-          severity={snackbar.severity}
-          variant="filled"
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-      
+  open={snackbar.open}
+  autoHideDuration={3000}
+  onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+  anchorOrigin={{ vertical: "bottom", horizontal: "right" }} // 👈 Added this line
+>
+  <Alert severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
+    {snackbar.message}
+  </Alert>
+</Snackbar>
+
+
+      {/* Edit Product Dialog */}
       <EditProduct
         open={editDialog.open}
         onClose={() => setEditDialog({ open: false, product: null })}
@@ -346,5 +321,3 @@ const handleProductUpdated = async (updatedProduct) => {
 };
 
 export default ProductView;
-
-

@@ -39,10 +39,11 @@ const createProductSchema = Joi.object({
     }),
   features: Joi.array().items(
     Joi.object({
-      index: Joi.number().required()
+      index: Joi.number().integer().min(0).optional()
         .messages({
           'number.base': 'Feature index must be a number',
-          'any.required': 'Feature index is required'
+          'number.integer': 'Feature index must be an integer',
+          'number.min': 'Feature index cannot be negative'
         }),
       feature: Joi.string().required().trim()
         .messages({
@@ -87,9 +88,11 @@ const updateProductSchema = Joi.object({
     }),
   features: Joi.array().items(
     Joi.object({
-      index: Joi.number()
+      index: Joi.number().integer().min(0)
         .messages({
-          'number.base': 'Feature index must be a number'
+          'number.base': 'Feature index must be a number',
+          'number.integer': 'Feature index must be an integer',
+          'number.min': 'Feature index cannot be negative'
         }),
       feature: Joi.string().trim()
         .messages({
