@@ -26,11 +26,14 @@ const MDDialogBox = ({
       onClose={onClose}
       maxWidth={maxWidth}
       fullWidth={fullWidth}
-      PaperProps={{
+      slotProps={{
         sx: {
           borderRadius: "16px",
-          backgroundColor: "#fecaca", // 🔥 pink background
-          boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
+           boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
+           background:"#4285F4",
+
+
+           // backgroundColor: "#fecaca", 
         },
       }}
     >
@@ -41,7 +44,10 @@ const MDDialogBox = ({
           justifyContent: "space-between",
           alignItems: "center",
           padding: "10px 20px",
-          backgroundColor: "#fecaca",
+          // backgroundColor: "#fecaca",
+          backgroundColor:"#4285F4",
+          //backgroundColor:"#ef4444",
+         
           borderBottom: "1px solid rgba(0,0,0,0.1)",
         }}
       >

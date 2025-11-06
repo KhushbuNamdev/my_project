@@ -4,7 +4,6 @@ import {
   fetchAllProducts,
   removeProduct,
 } from "../../Slice/productSlice";
-import { createNewInventory } from "../../Slice/inventorySlice";
 import {
   Box,
   Typography,
@@ -13,12 +12,6 @@ import {
   IconButton,
   Tooltip,
   Snackbar,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -29,6 +22,7 @@ import MDSearchbar from "../../custom/MDsearchbar";
 import AddProduct from "./addproduct";
 import DeleteProductDialog from "./deleteproduct";
 import EditProduct from "./editproduct";
+import AddQuantityDialog from "./addQuantity"; // ✅ New Import
 
 const ProductView = () => {
   const dispatch = useDispatch();
@@ -42,7 +36,6 @@ const ProductView = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openQuantityDialog, setOpenQuantityDialog] = useState(false);
-  const [quantity, setQuantity] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const [snackbar, setSnackbar] = useState({
@@ -61,7 +54,7 @@ const ProductView = () => {
     product: null,
   });
 
-  // 🔹 Fetch products
+  // 🔹 Fetch products on mount
   useEffect(() => {
     dispatch(fetchAllProducts())
       .unwrap()
@@ -146,51 +139,7 @@ const ProductView = () => {
   // 🔹 Open Quantity Dialog
   const handleAddQuantity = (product) => {
     setSelectedProduct(product);
-    setQuantity("");
     setOpenQuantityDialog(true);
-  };
-
-  // 🔹 Submit Quantity
-  const handleQuantitySubmit = async () => {
-    if (!selectedProduct || !quantity || isNaN(quantity) || quantity <= 0) {
-      setSnackbar({
-        open: true,
-        message: "Please enter a valid whole number for quantity",
-        severity: "error",
-      });
-      return;
-    }
-
-    try {
-      await dispatch(
-        createNewInventory({
-          productId: selectedProduct._id,
-          quantity: parseInt(quantity, 10),
-        })
-      ).unwrap();
-
-      // Refresh products (inventory data comes with them)
-      await dispatch(fetchAllProducts())
-        .unwrap()
-        .then((res) => {
-          setProducts(Array.isArray(res) ? res : res?.products || res?.data || []);
-        });
-
-      setSnackbar({
-        open: true,
-        message: "Quantity added successfully!",
-        severity: "success",
-      });
-      setOpenQuantityDialog(false);
-      setQuantity("");
-      setSelectedProduct(null);
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Failed to add quantity",
-        severity: "error",
-      });
-    }
   };
 
   // 🔹 Table Columns
@@ -234,7 +183,7 @@ const ProductView = () => {
         <Box display="flex" alignItems="center" gap={1}>
           <Tooltip title="Edit">
             <IconButton
-              color="primary"
+            
               size="small"
               onClick={() => handleEditClick(params.row)}
             >
@@ -244,7 +193,7 @@ const ProductView = () => {
 
           <Tooltip title="Delete">
             <IconButton
-              color="error"
+             
               size="small"
               onClick={() => handleDeleteClick(params.row)}
             >
@@ -256,6 +205,7 @@ const ProductView = () => {
             <MDButton
               onClick={() => handleAddQuantity(params.row)}
               sx={{
+               
                 px: 1.5,
                 py: 0.3,
                 fontSize: "0.7rem",
@@ -337,6 +287,7 @@ const ProductView = () => {
       {/* Top Bar */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <MDSearchbar
+         color="#FFFFFF"
           placeholder="Search products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -363,32 +314,16 @@ const ProductView = () => {
         productName={deleteDialog.product?.name || "this product"}
       />
 
-      {/* Quantity Dialog */}
-      <Dialog
+      {/* ✅ New Separate Add Quantity Dialog */}
+      <AddQuantityDialog
         open={openQuantityDialog}
         onClose={() => setOpenQuantityDialog(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Add Quantity</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Quantity"
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            inputProps={{ min: 1, step: 1 }}
-            margin="dense"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenQuantityDialog(false)}>Cancel</Button>
-          <Button onClick={handleQuantitySubmit} variant="contained">
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
+        product={selectedProduct}
+        onSuccess={async () => {
+          const res = await dispatch(fetchAllProducts()).unwrap();
+          setProducts(Array.isArray(res) ? res : res?.products || res?.data || []);
+        }}
+      />
 
       {/* Snackbar */}
       <Snackbar

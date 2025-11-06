@@ -20,7 +20,7 @@ function App() {
 
   const handleLogout = () => {
     dispatch(logoutUser());
-  };
+  }; 
 
   useEffect(() => {
     dispatch(checkAuthStatus());

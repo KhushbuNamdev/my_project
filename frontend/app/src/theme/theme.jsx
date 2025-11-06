@@ -14,10 +14,16 @@ const theme = createTheme({
       dark: '#fbcfe8', // Darker pink
       contrastText: '#1F2937',
     },
-    background: {
-      default: '#fef2f2', // Very light pink/white
-      paper: 'rgba(255, 255, 255, 0.8)', // Semi-transparent white
-    },
+    // background: {
+    //   default: '#fef2f2', // Very light pink/white
+    //   paper: 'rgba(255, 255, 255, 0.8)', // Semi-transparent white
+    // },
+
+
+     background:{
+
+     default:"#FFFFFF"
+     },
     text: {
       primary: '#1F2937', // Dark gray
       secondary: '#4B5563', // Medium gray
@@ -27,25 +33,32 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          background: 'rgba(255, 255, 255, 0.7)',
-          backdropFilter: 'blur(10px)',
           borderRadius: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: '0 4px 30px rgba(254, 202, 202, 0.2)',
           transition: 'all 0.3s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-5px)',
-            boxShadow: '0 10px 25px rgba(254, 202, 202, 0.3)',
-          },
         },
       },
+      variants: [
+        {
+          props: { variant: 'glass' },
+          style: {
+            background: 'rgba(255, 255, 255, 0.7)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            boxShadow: '0 4px 30px rgba(254, 202, 202, 0.2)',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+              boxShadow: '0 10px 25px rgba(254, 202, 202, 0.3)',
+            },
+          },
+        },
+      ],
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
           background: 'rgba(255, 255, 255, 0.98) !important',
           backdropFilter: 'blur(10px)',
-          boxShadow: '0 4px 30px rgba(254, 202, 202, 0.2)',
+          boxShadow: '0 4px 30px hsla(0, 96%, 89%, 0.20)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.8)',
         },
       },
@@ -61,10 +74,10 @@ const theme = createTheme({
         contained: {
           background: 'linear-gradient(45deg, #fecaca 0%, #fee2ea 100%)',
           color: '#1F2937',
-          '&:hover': {
-            background: 'linear-gradient(45deg, #fecaca 0%, #fbcfe8 100%)',
-            boxShadow: '0 4px 15px rgba(254, 202, 202, 0.4)',
-          },
+          // '&:hover': {
+          //   background: 'linear-gradient(45deg, #fecaca 0%, #fbcfe8 100%)',
+          //   boxShadow: '0 4px 15px rgba(254, 202, 202, 0.4)',
+          // },
         },
         outlined: {
           borderColor: '#fecaca',
@@ -117,19 +130,5 @@ const theme = createTheme({
     },
   },
 });
-
-// Glass card styles
-theme.components.MuiCard.glass = {
-  background: 'rgba(255, 255, 255, 0.7)',
-  backdropFilter: 'blur(10px)',
-  borderRadius: '16px',
-  border: '1px solid rgba(255, 255, 255, 0.8)',
-  boxShadow: '0 4px 30px rgba(254, 202, 202, 0.2)',
-  transition: 'all 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: '0 10px 25px rgba(254, 202, 202, 0.3)',
-  },
-};
 
 export default theme;

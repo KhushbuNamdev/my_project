@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, clearError } from '../Slice/authSlice';
+import MDButton from '../custom/MDbutton';
 import {
   Box,
   Paper,
@@ -13,7 +14,7 @@ import {
   Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-
+import image from '../assets/image.png';
 const LoginPage = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -56,9 +57,9 @@ const LoginPage = () => {
         alignItems: 'center',
         justifyContent: 'center',
         // 🎨 Background gradient
-        backgroundColor: '#fecaca',
-        backgroundImage:
-          'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
+        // backgroundColor: '#fecaca',
+        // backgroundImage:
+        //   'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
         color: '#111',
         margin: 0,
         padding: 2,
@@ -74,9 +75,9 @@ const LoginPage = () => {
           flexDirection: 'column',
           alignItems: 'center',
           borderRadius: 4,
-           backgroundColor: '#fecaca',
-        backgroundImage:
-          'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
+          //  backgroundColor: '#fecaca',
+        // backgroundImage:
+        //   'linear-gradient(180deg, #fecaca 0%, #fee2e2 50%, #ffffff 100%)',
         color: '#111',
           boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
         }}
@@ -84,10 +85,10 @@ const LoginPage = () => {
         <Avatar sx={{ m: 1, bgcolor: '#ef4444' }}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold', color: '#111' }}>
-          Sign In
-        </Typography>
-
+        {/* <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold', color: '#111' }}>
+          <image/>
+        </Typography> */}
+<img src={image} alt="Example" width="200" />
         {error && (
           <Alert severity="error" sx={{ width: '100%', mt: 2 }}>
             {error}
@@ -120,20 +121,20 @@ const LoginPage = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button
+          <MDButton
             type="submit"
             fullWidth
             variant="contained"
             sx={{
               mt: 3,
               mb: 2,
-              bgcolor: '#ef4444',
-              '&:hover': { bgcolor: '#dc2626' },
+              bgcolor:"#4285F4",
+              '&:hover': { bgcolor: '#4285F4' },
             }}
             disabled={loading}
           >
             {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Sign In'}
-          </Button>
+          </MDButton>
         </Box>
       </Paper>
     </Box>

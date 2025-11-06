@@ -18,20 +18,24 @@ const MDButton = ({
       disabled={disabled}
       onClick={onClick}
       sx={{
-                  background: 'linear-gradient(45deg, #fda4af 0%, #f9a8d4 100%)',
+
+
+        
+                  // background: 'linear-gradient(45deg, #fda4af 0%, #f9a8d4 100%)',
+                  background:"#4285F4",
        // background: 'linear-gradient(45deg, #fecaca 0%, #fbcfe8 100%)',
              // background: 'rgba(255, 255, 255, 0.9)',
-        color: '#111',
+       color:"#FFFFFF",
         fontWeight: 'bold',
         textTransform: 'none',
         borderRadius: '12px',
         boxShadow: '0px 3px 6px rgba(0,0,0,0.2)',
         px: 3,
         py: 1,
-        '&:hover': {
-          background: 'linear-gradient(45deg, #fda4af 0%, #f9a8d4 100%)',
-          boxShadow: '0px 4px 8px rgba(0,0,0,0.25)',
-        },
+        // '&:hover': {
+        //   background: 'linear-gradient(45deg, #fda4af 0%, #f9a8d4 100%)',
+        //   boxShadow: '0px 4px 8px rgba(0,0,0,0.25)',
+        // },
         ...sx, // ✅ allows custom styling from outside
       }}
       {...props}

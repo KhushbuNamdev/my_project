@@ -21,7 +21,7 @@ import { fetchCategories } from "../../Slice/categorySlice";
 import { createNewProduct } from "../../Slice/productSlice";
 import MDDialogBox from "../../custom/MDdailogbox";
 import MDButton from "../../custom/MDbutton";
-
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 const AddProduct = ({ open, onClose, onSuccess }) => {
   const dispatch = useDispatch();
   const { categories = [], loading: categoriesLoading } = useSelector(
@@ -218,8 +218,8 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
             value={productData.gstPercentage}
             onChange={handleInputChange}
             fullWidth
-            inputProps={{ min: 0, max: 100, step: 0.01 }}
-            sx={{ mb: 3 }}
+            slotProps={{ min: 0, max: 100, step: 0.01 }}
+            
           />
 
           <Box sx={{ mb: 2 }}>
@@ -232,14 +232,30 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
               }}
             >
               <Typography variant="subtitle1">Features</Typography>
-              <Button
+              {/* <MDButton
                 onClick={addFeature}
                 startIcon={<AddIcon />}
                 size="small"
-                color="primary"
-              >
+               
+              > */}
+
+
+              <MDButton
+                          onClick={addFeature}
+              
+                            sx={{
+                              px: 1.5,
+                              py: 0.3,
+                              fontSize: "0.7rem",
+                              minWidth: "auto",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                            }}
+                          >
+                              <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
                 Add Feature
-              </Button>
+              </MDButton>
             </Box>
             <Divider sx={{ mb: 2 }} />
 
@@ -251,7 +267,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                 alignItems="center"
                 sx={{ mb: 2 }}
               >
-                <Grid item xs={11}>
+                <Grid size={{xs:11}}>
                   <TextField
                     label={`Feature ${index + 1}`}
                     value={feature}
@@ -261,7 +277,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                     required
                   />
                 </Grid>
-                <Grid item xs={1}>
+               <Grid size={{xs:1}}>
                   <IconButton
                     onClick={() => removeFeature(index)}
                     disabled={productData.features.length <= 1}

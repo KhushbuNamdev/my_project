@@ -149,7 +149,7 @@ const Wholesalerview = () => {
           <Tooltip title="Edit">
             <IconButton
               onClick={() => handleOpenEditDialog(params.row)}
-              color="primary"
+           
               size="small"
             >
               <EditIcon />
@@ -158,7 +158,7 @@ const Wholesalerview = () => {
           <Tooltip title="Delete">
             <IconButton
               onClick={() => handleOpenDeleteDialog(params.row._id)}
-              color="error"
+           
               size="small"
             >
               <DeleteIcon />

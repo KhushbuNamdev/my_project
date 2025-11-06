@@ -17,6 +17,7 @@ import MDDataGrid from "../../custom/MDdatagrid";
 import AddCategory from "./AddCategory";
 import EditCategory from "./editcategory"; // ✅ new import
 import DeleteCategoryDialog from "./deletecategory";
+import MDButton from "../../custom/MDbutton";
 const CategoryView = () => {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.category);
@@ -83,30 +84,22 @@ const handleDeleteClick = (category) => {
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           <Tooltip title="Edit">
-            <IconButton color="primary" onClick={() => handleEditClick(params.row)}>
-              <EditIcon />
+            <IconButton  onClick={() => handleEditClick(params.row)}>
+            <EditIcon color="dark"/>
             </IconButton>
           </Tooltip>
-
-
-
 
           <Tooltip title="Delete">
 
 
 
             <IconButton
-                color="error"
+                
                 onClick={() => handleDeleteClick(params.row)}
               >
                 <DeleteIcon />
               </IconButton>
-
-
-
-
-
-          </Tooltip>
+ </Tooltip>
         </Box>
       ),
     },
@@ -136,13 +129,9 @@ const handleDeleteClick = (category) => {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search categories..."
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpenAddDialog(true)}
-        >
+        <MDButton onClick={() => setOpenAddDialog(true)} >
           Add New Category
-        </Button>
+        </MDButton>
       </Box>
 
       {loading && categories.length === 0 ? (

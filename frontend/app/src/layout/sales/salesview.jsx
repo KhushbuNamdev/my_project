@@ -89,10 +89,10 @@ const Salesmanview = () => {
       filterable: false,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton size="small" color="primary" onClick={() => handleEdit(params.row)}>
+          <IconButton size="small" onClick={() => handleEdit(params.row)}>
             <EditIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" color="error" onClick={() => handleDeleteClick(params.row.id)}>
+          <IconButton size="small" onClick={() => handleDeleteClick(params.row.id)}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Box>
