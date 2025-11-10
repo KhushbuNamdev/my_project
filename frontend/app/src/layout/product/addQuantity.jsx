@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { TextField, Button, Snackbar, Alert } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { createNewInventory, fetchAllInventory } from "../../Slice/inventorySlice";
+import { createNewInventory } from "../../Slice/inventorySlice";
 import { fetchAllProducts } from "../../Slice/productSlice";
 import MDDialogBox from "../../custom/MDdailogbox";
 import MDButton from "../../custom/MDbutton";
@@ -16,21 +16,10 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
   });
 
   const handleSubmit = async () => {
-    const quantityNum = parseInt(quantity, 10);
-    
-    if (!product || !quantity || isNaN(quantityNum)) {
+    if (!product || !quantity || isNaN(quantity) || quantity <= 0) {
       setSnackbar({
         open: true,
-        message: "Please enter a valid number for quantity",
-        severity: "error",
-      });
-      return;
-    }
-    
-    if (quantityNum <= 0) {
-      setSnackbar({
-        open: true,
-        message: "Quantity must be greater than zero",
+        message: "Please enter a valid whole number for quantity",
         severity: "error",
       });
       return;
@@ -44,11 +33,7 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
         })
       ).unwrap();
 
-      // Refresh both products and inventory data
-      await Promise.all([
-        dispatch(fetchAllProducts()),
-        dispatch(fetchAllInventory())
-      ]);
+      await dispatch(fetchAllProducts());
 
       setSnackbar({
         open: true,
@@ -89,21 +74,9 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
           label="Quantity"
           type="number"
           value={quantity}
-          onChange={(e) => {
-            const value = e.target.value;
-            // Only allow positive numbers
-            if (value === '' || (parseInt(value, 10) > 0)) {
-              setQuantity(value);
-            }
-          }}
-          inputProps={{
-            min: 1,
-            step: 1
-          }}
-          error={quantity !== '' && (isNaN(parseInt(quantity, 10)) || parseInt(quantity, 10) <= 0)}
-          helperText={quantity !== '' && (isNaN(parseInt(quantity, 10)) || parseInt(quantity, 10) <= 0) 
-            ? 'Please enter a valid quantity greater than zero' 
-            : ''}
+          onChange={(e) => setQuantity(e.target.value)}
+          slotPropsProps={{ min: 1, step: 1 }}
+        
         />
       </MDDialogBox>
 

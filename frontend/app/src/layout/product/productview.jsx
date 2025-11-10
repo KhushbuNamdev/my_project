@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -85,7 +86,7 @@ const ProductView = () => {
     });
   };
 
-  // 🔹 Update Success Handler
+  // Update Success Handler
   const handleProductUpdated = async () => {
     try {
       setSnackbar({
@@ -216,7 +217,7 @@ const ProductView = () => {
               }}
             >
               <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
-              Add quantity
+              Add
             </MDButton>
           </Tooltip>
         </Box>
@@ -244,25 +245,35 @@ const ProductView = () => {
     inventory: product.inventory || { totalQuantity: 0 },
   }));
 
-  // 🔹 Add Product Success Handler
-  const handleProductAdded = (newProduct) => {
-    if (!newProduct) return;
-    const formatted = {
-      ...newProduct,
-      _id: newProduct._id || `temp-${Date.now()}`,
-      name: newProduct.name || "New Product",
-      categoryIds: Array.isArray(newProduct.categoryIds)
-        ? newProduct.categoryIds.map((cat) => ({
-            _id: typeof cat === "object" ? cat._id : cat,
-            name:
-              typeof cat === "object"
-                ? cat.name
-                : categories.find((c) => c._id === cat)?.name || "Unknown",
-          }))
-        : [],
-      inventory: newProduct.inventory || { totalQuantity: 0 },
-    };
-    setProducts((prev) => [formatted, ...prev]);
+  // Add Product Success Handler
+  const handleProductAdded = async () => {
+    try {
+      // Fetch the latest products from the server
+      const result = await dispatch(fetchAllProducts()).unwrap();
+      const updatedProducts = Array.isArray(result) 
+        ? result 
+        : result?.products || result?.data || [];
+      
+      // Update the products list with fresh data
+      setProducts(updatedProducts);
+      
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: "Product added successfully!",
+        severity: "success",
+      });
+      
+      // Close the add dialog
+      setOpenAddDialog(false);
+    } catch (error) {
+      console.error("Failed to refresh products:", error);
+      setSnackbar({
+        open: true,
+        message: "Product was created but failed to refresh the list",
+        severity: "warning",
+      });
+    }
   };
 
   // 🔹 Loading and Error States

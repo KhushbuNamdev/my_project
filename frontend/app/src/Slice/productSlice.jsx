@@ -188,20 +188,11 @@ const productSlice = createSlice({
         state.error = null;
         state.success = false;
       })
-      // In productSlice.jsx - Add this to the extraReducers section
-.addCase(createNewProduct.fulfilled, (state, action) => {
-  state.loading = false;
-  if (action.payload) {
-    state.products = [action.payload, ...state.products];
-    state.totalItems += 1;
-  }
-  state.error = null;
-  
-  // Trigger inventory refresh after product creation
-  return async (dispatch) => {
-    await dispatch(fetchAllInventory());
-  };
-})
+      .addCase(createNewProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.products.unshift(action.payload);
+      })
       .addCase(createNewProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

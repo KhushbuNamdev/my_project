@@ -75,31 +75,89 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
     setProductData((prev) => ({ ...prev, categoryIds: e.target.value }));
   };
 
-  // In addproduct.jsx - Update the handleSubmit function
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const result = await dispatch(createNewProduct(formData));
-    if (result.meta.requestStatus === 'fulfilled') {
-      onClose();
-      // Show success message
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+
+    if (!productData.name || productData.categoryIds.length === 0) {
       setSnackbar({
         open: true,
-        message: 'Product created successfully',
-        severity: 'success',
+        message: "Please fill all required fields",
+        severity: "error",
       });
-      // Refresh inventory data
-      await dispatch(fetchAllInventory());
+      return;
     }
-  } catch (error) {
-    console.error('Error creating product:', error);
-    setSnackbar({
-      open: true,
-      message: error.message || 'Failed to create product',
-      severity: 'error',
-    });
-  }
-};
+
+    const hasEmptyFeatures = productData.features.some(
+      (f) => !f.trim()
+    );
+    if (hasEmptyFeatures) {
+      setSnackbar({
+        open: true,
+        message: "Please fill all feature descriptions",
+        severity: "error",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const productPayload = {
+        name: productData.name.trim(),
+        categoryIds: productData.categoryIds,
+        gstPercentage: parseFloat(productData.gstPercentage) || 0,
+        features: productData.features
+          .filter((f) => f.trim() !== "")
+          .map((f, i) => ({
+            index: i + 1,
+            feature: f.trim(),
+          })),
+      };
+
+      const result = await dispatch(createNewProduct(productPayload)).unwrap();
+
+      setSnackbar({
+        open: true,
+        message: "Product created successfully!",
+        severity: "success",
+      });
+
+      setProductData({
+        name: "",
+        categoryIds: [],
+        gstPercentage: 0,
+        features: [""],
+      });
+
+      if (onSuccess) {
+        const productDataFromServer = result.data || result.product || result;
+        onSuccess({
+          ...productDataFromServer,
+          _id: productDataFromServer._id || result._id,
+          name: productDataFromServer.name || "New Product",
+          categoryIds: Array.isArray(productDataFromServer.categoryIds)
+            ? productDataFromServer.categoryIds
+            : (productDataFromServer.categories || []).map((cat) => ({
+                _id: cat._id || cat,
+                name:
+                  cat.name ||
+                  categories.find((c) => c._id === (cat._id || cat))?.name ||
+                  "Uncategorized",
+              })),
+        });
+      }
+
+      setTimeout(() => onClose(), 100);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.message || "Failed to create product",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
