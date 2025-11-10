@@ -216,7 +216,7 @@ const ProductView = () => {
               }}
             >
               <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
-              Add
+              Add quantity
             </MDButton>
           </Tooltip>
         </Box>

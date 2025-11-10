@@ -94,6 +94,7 @@ const inventorySlice = createSlice({
           state.currentPage = 1;
           state.totalPages = 1;
         }
+        state.error = null;
       })
       .addCase(fetchAllInventory.rejected, (state, action) => {
         state.loading = false;
@@ -107,8 +108,16 @@ const inventorySlice = createSlice({
       })
       .addCase(createNewInventory.fulfilled, (state, action) => {
         state.loading = false;
-        state.items.unshift(action.payload);
-        state.totalItems += 1;
+        // Add the new item to the beginning of the items array
+        if (action.payload) {
+          state.items = [action.payload, ...state.items];
+          state.totalItems += 1;
+          // Ensure we don't exceed the page size
+          if (state.items.length > (state.totalItems / state.totalPages)) {
+            state.items = state.items.slice(0, state.totalItems / state.totalPages);
+          }
+        }
+        state.error = null;
       })
       .addCase(createNewInventory.rejected, (state, action) => {
         state.loading = false;

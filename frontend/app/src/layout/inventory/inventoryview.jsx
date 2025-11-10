@@ -33,8 +33,34 @@ const InventoryView = () => {
     severity: "success",
   });
 
+  // In inventoryview.jsx - Update the useEffect
+  // Fetch data when component mounts and when it becomes visible
   useEffect(() => {
-    dispatch(fetchAllInventory());
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchAllInventory());
+      } catch (error) {
+        console.error('Error fetching inventory:', error);
+      }
+    };
+
+    // Set up visibility change listener
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    };
+
+    // Initial fetch
+    fetchData();
+
+    // Add visibility change listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [dispatch]);
 
   const handleEdit = (id) => {
@@ -176,9 +202,7 @@ const InventoryView = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <MDButton variant="gradient" color="info">
-          Add New Item
-        </MDButton>
+       
       </Box>
 
       {/* Data Table */}
