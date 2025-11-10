@@ -1,4 +1,6 @@
+import mongoose from 'mongoose';
 import Product from '../models/product.model.js';
+import Inventory from '../models/inventory.model.js';
 import { NotFoundError } from '../utils/errorHandler.js';
 
 /**
@@ -173,22 +175,43 @@ const updateProduct = async (id, updateData) => {
 };
 
 /**
- * Soft delete a product
+ * Soft delete a product and its associated inventory records
  * @param {string} id - Product ID
  * @returns {Promise<Object>} Result of the operation
  */
 const deleteProduct = async (id) => {
-  const product = await Product.findOneAndUpdate(
-    { _id: id, isDeleted: false },
-    { $set: { isDeleted: true } },
-    { new: true }
-  );
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  if (!product) {
-    throw new NotFoundError('Product not found or already deleted');
+  try {
+    // 1. Find and soft delete the product
+    const product = await Product.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      { $set: { isDeleted: true } },
+      { new: true, session }
+    );
+
+    if (!product) {
+      throw new NotFoundError('Product not found or already deleted');
+    }
+
+    // 2. Completely remove all inventory records for this product
+    await Inventory.deleteMany(
+      { productId: id },
+      { session }
+    );
+
+    await session.commitTransaction();
+    return {
+      message: 'Product soft deleted and associated inventory records have been completely removed',
+      deletedInventory: true
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
   }
-
-  return { message: 'Product deleted successfully' };
 };
 
 export {

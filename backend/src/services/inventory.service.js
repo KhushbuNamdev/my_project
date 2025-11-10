@@ -108,11 +108,19 @@ const getAllInventory = async ({
 
   const [inventory, total] = await Promise.all([
     Inventory.find()
-      .populate('productId', 'name')
+      .populate({
+        path: 'productId',
+        select: 'name',
+        match: { isDeleted: { $ne: true } }
+      })
       .sort(sort)
       .skip(skip)
       .limit(limit),
     Inventory.countDocuments()
+      .populate({
+        path: 'productId',
+        match: { isDeleted: { $ne: true } }
+      })
   ]);
 
   return {

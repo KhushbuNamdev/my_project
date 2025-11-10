@@ -33,7 +33,6 @@ const InventoryView = () => {
     severity: "success",
   });
 
-  // In inventoryview.jsx - Update the useEffect
   // Fetch data when component mounts and when it becomes visible
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +40,11 @@ const InventoryView = () => {
         await dispatch(fetchAllInventory());
       } catch (error) {
         console.error('Error fetching inventory:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to load inventory',
+          severity: 'error',
+        });
       }
     };
 
@@ -62,6 +66,11 @@ const InventoryView = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [dispatch]);
+
+  // Log the items for debugging
+  useEffect(() => {
+    console.log('Inventory items:', items);
+  }, [items]);
 
   const handleEdit = (id) => {
     console.log("Edit clicked for ID:", id);
@@ -102,14 +111,73 @@ const InventoryView = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Group inventory items by product ID and calculate totals
+  const groupedInventory = useMemo(() => {
+    if (!items || !Array.isArray(items)) return [];
+    
+    const grouped = items.reduce((acc, item) => {
+      const productId = item.product?._id || item.productId?._id || 'unknown';
+      const productName = item.product?.name || item.productId?.name || 'Unknown Product';
+      
+      if (!acc[productId]) {
+        acc[productId] = {
+          id: productId,
+          productId: productId,
+          productName: productName,
+          totalQuantity: 0,
+          usedQuantity: 0,
+          availableQuantity: 0,
+          items: []
+        };
+      }
+      
+      acc[productId].totalQuantity += item.quantity || 0;
+      acc[productId].usedQuantity += item.usedQuantity || 0;
+      acc[productId].availableQuantity += (item.quantity || 0) - (item.usedQuantity || 0);
+      acc[productId].items.push(item);
+      
+      return acc;
+    }, {});
+    
+    return Object.values(grouped);
+  }, [items]);
+
+  // Filter based on search term
+  const filteredInventory = useMemo(() => {
+    if (!searchTerm) return groupedInventory;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return groupedInventory.filter(item => 
+      item.productName.toLowerCase().includes(searchLower)
+    );
+  }, [groupedInventory, searchTerm]);
+
   // ✅ Columns for MDDataGrid
   const columns = [
-    { field: "productName", headerName: "Product Name", flex: 1.5, minWidth: 200 },
-    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 120 },
-    { field: "usedQuantity", headerName: "Used Qty", flex: 1, minWidth: 120 },
-    { field: "availableQuantity", headerName: "Available Qty", flex: 1, minWidth: 120 },
-    { field: "status", headerName: "Status", flex: 1, minWidth: 120 },
-    { field: "lowStockThreshold", headerName: "Low Stock", flex: 1, minWidth: 120 },
+    { 
+      field: "productName", 
+      headerName: "Product Name", 
+      flex: 1.5, 
+      minWidth: 200 
+    },
+    { 
+      field: "totalQuantity", 
+      headerName: "Total Quantity", 
+      flex: 1, 
+      minWidth: 120 
+    },
+    { 
+      field: "usedQuantity", 
+      headerName: "Used Quantity", 
+      flex: 1, 
+      minWidth: 120 
+    },
+    { 
+      field: "availableQuantity", 
+      headerName: "Available Quantity", 
+      flex: 1, 
+      minWidth: 120 
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -141,33 +209,32 @@ const InventoryView = () => {
     },
   ];
 
-  // ✅ Filter rows based on search term
-  const filteredRows = useMemo(() => {
-    if (!searchTerm) return items;
+  // Render loading state
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="300px">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-    const searchLower = searchTerm.toLowerCase();
-    return items.filter((item) => {
-      return (
-        (item.productId?.name || "").toLowerCase().includes(searchLower) ||
-        (item.status || "").toLowerCase().includes(searchLower) ||
-        (item.quantity?.toString() || "").includes(searchTerm) ||
-        (item.usedQuantity?.toString() || "").includes(searchTerm) ||
-        (item.availableQuantity?.toString() || "").includes(searchTerm) ||
-        (item.lowStockThreshold?.toString() || "").includes(searchTerm)
-      );
-    });
-  }, [items, searchTerm]);
+  // Render error state
+  if (error) {
+    return (
+      <Box p={3}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
 
-  // ✅ Transform backend data into DataGrid rows
-  const rows = filteredRows.map((item) => ({
-    id: item._id, // required unique ID
-    productName: item.productId?.name || "N/A",
-    quantity: item.quantity,
-    usedQuantity: item.usedQuantity,
-    availableQuantity: item.availableQuantity,
-    status: item.status,
-    lowStockThreshold: item.lowStockThreshold,
-  }));
+  // Render empty state
+  if (filteredInventory.length === 0) {
+    return (
+      <Box p={3} textAlign="center">
+        <Typography variant="h6">No inventory items found</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box p={2}>
@@ -177,8 +244,6 @@ const InventoryView = () => {
         onClose={handleCloseDeleteDialog}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
-       
-        
         confirmText="Delete"
         cancelText="Cancel"
       />
@@ -206,17 +271,23 @@ const InventoryView = () => {
       </Box>
 
       {/* Data Table */}
-      {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" height="400px">
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Alert severity="error">{error}</Alert>
-      ) : (
-        <Paper elevation={0} sx={{ height: 500, width: "100%", p: 1 }}>
-          <MDDataGrid rows={rows} columns={columns} pageSize={5} />
-        </Paper>
-      )}
+      <Paper elevation={0} sx={{ height: 500, width: "100%", p: 1 }}>
+        <MDDataGrid
+          rows={filteredInventory}
+          columns={columns}
+          pageSize={10}
+          rowsPerPageOptions={[5, 10, 20]}
+          disableSelectionOnClick
+          loading={loading}
+          components={{
+            NoRowsOverlay: () => (
+              <Box p={2} textAlign="center">
+                <Typography>No inventory items found</Typography>
+              </Box>
+            ),
+          }}
+        />
+      </Paper>
     </Box>
   );
 };

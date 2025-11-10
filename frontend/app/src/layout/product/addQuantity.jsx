@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { TextField, Button, Snackbar, Alert } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { createNewInventory } from "../../Slice/inventorySlice";
+import { createNewInventory, fetchAllInventory } from "../../Slice/inventorySlice";
 import { fetchAllProducts } from "../../Slice/productSlice";
 import MDDialogBox from "../../custom/MDdailogbox";
 import MDButton from "../../custom/MDbutton";
@@ -26,6 +26,7 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
     }
 
     try {
+      // Create the inventory item
       await dispatch(
         createNewInventory({
           productId: product._id,
@@ -33,7 +34,11 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
         })
       ).unwrap();
 
-      await dispatch(fetchAllProducts());
+      // Refresh both products and inventory in parallel
+      await Promise.all([
+        dispatch(fetchAllProducts()),
+        dispatch(fetchAllInventory())
+      ]);
 
       setSnackbar({
         open: true,
