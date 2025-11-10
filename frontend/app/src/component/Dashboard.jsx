@@ -19,7 +19,7 @@ import Wholesalerview from '../layout/wholesaler/wholesalerview.jsx';
 import Categoryview from '../layout/categories/categoryview.jsx';
 import Salesview from '../layout/sales/salesview.jsx';
 import Profilepage from '../layout/profile/profilepage.jsx';
-
+import InventoryView from '../layout/inventory/inventoryview.jsx';
 const drawerWidth = 240;
 
 const DashboardLayout = ({ onLogout }) => {
@@ -41,6 +41,7 @@ const DashboardLayout = ({ onLogout }) => {
     '/dashboard/categoryview': 'Categories',
     '/dashboard/wholesalerview': 'Wholesalers',
     '/dashboard/profilepage': 'Profilepage',
+    "/dashboard/inventoryview":"Inventory",
     '/dashboard': 'Dashboard',
   };
 
@@ -247,7 +248,12 @@ const DashboardLayout = ({ onLogout }) => {
             <Route path="salesview" element={<Salesview />} />
             <Route path="categoryview" element={<Categoryview />} />
             <Route path="wholesalerview" element={<Wholesalerview />} />
-            <Route path="profilepage" element={<Profilepage />} />
+             <Route path="profilepage" element={<Profilepage />} />
+            <Route path="inventoryview" element={<InventoryView/>} />
+   
+
+
+
             {/* Redirect any unmatched routes to the dashboard */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

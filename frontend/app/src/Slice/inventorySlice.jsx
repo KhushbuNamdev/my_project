@@ -80,10 +80,20 @@ const inventorySlice = createSlice({
       })
       .addCase(fetchAllInventory.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.data || [];
-        state.totalItems = action.payload.total || 0;
-        state.currentPage = action.payload.page || 1;
-        state.totalPages = action.payload.pages || 1;
+        // Check if the payload has a 'data' property (for paginated responses)
+        // or if it's the direct array of items
+        if (action.payload && action.payload.data) {
+          state.items = Array.isArray(action.payload.data) ? action.payload.data : [];
+          state.totalItems = action.payload.pagination?.total || action.payload.total || 0;
+          state.currentPage = action.payload.pagination?.page || action.payload.page || 1;
+          state.totalPages = action.payload.pagination?.pages || action.payload.pages || 1;
+        } else {
+          // Handle case where the payload is directly the array of items
+          state.items = Array.isArray(action.payload) ? action.payload : [];
+          state.totalItems = state.items.length;
+          state.currentPage = 1;
+          state.totalPages = 1;
+        }
       })
       .addCase(fetchAllInventory.rejected, (state, action) => {
         state.loading = false;

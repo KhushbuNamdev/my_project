@@ -23,12 +23,14 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import image from '../assets/image.png';
+import InventoryIcon from '@mui/icons-material/Inventory';
 const menuItems = [
   { text: 'Statistics', icon: <BarChartIcon />, path: '/dashboard/statistics' },
   { text: 'Products', icon: <StoreIcon />, path: '/dashboard/productview' },
   { text: 'Sales', icon: <AttachMoneyIcon />, path: '/dashboard/salesview' },
   { text: 'Categories', icon: <CategoryIcon />, path: '/dashboard/categoryview' },
   { text: 'Wholesalers', icon: <PeopleIcon />, path: '/dashboard/wholesalerview' },
+  {text:"inventory", icon:<InventoryIcon/>, path:"/dashboard/inventoryview"}
 ];
 
 const Sidebar = ({ onLogout, collapsed, toggleSidebar }) => {

@@ -5,6 +5,8 @@ import authReducer from '../Slice/authSlice';
 import userReducer from '../Slice/userSlice';
 import categoryReducer from '../Slice/categorySlice';
 import productReducer from '../Slice/productSlice';
+import inventoryReducer from '../Slice/inventorySlice';
+
 // Persist configuration
 const persistConfig = {
     key: 'root',
@@ -18,6 +20,7 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 // Configure store
 export const store = configureStore({
     reducer: {
+        inventory: inventoryReducer,
         auth: persistedAuthReducer,
         user: userReducer,
         category: categoryReducer,
