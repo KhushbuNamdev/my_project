@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllInventory } from "../../Slice/inventorySlice";
+import { fetchAllInventory, deleteInventoryItem } from "../../Slice/inventorySlice";
 import {
   Box,
   CircularProgress,
@@ -9,20 +9,29 @@ import {
   Paper,
   IconButton,
   Tooltip,
-  Grid,
-  
+  Snackbar,
 } from "@mui/material";
 import MDSearchBar from "../../custom/MDsearchbar";
 import MDButton from "../../custom/MDbutton";
-
-import { DataGrid } from "@mui/x-data-grid";
+import DeleteInventory from "./deleteInventory";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MDDataGrid from "../../custom/MDdatagrid"; // ✅ use custom MDDataGrid
 
 const InventoryView = () => {
   const dispatch = useDispatch();
-  const { items, loading, error } = useSelector((state) => state.inventory);
+  const { items, loading, error, deleteLoading } = useSelector(
+    (state) => state.inventory
+  );
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   useEffect(() => {
     dispatch(fetchAllInventory());
@@ -33,29 +42,60 @@ const InventoryView = () => {
     // TODO: open edit dialog or navigate to edit page
   };
 
-  const handleDelete = (id) => {
-    console.log("Delete clicked for ID:", id);
-    // TODO: show confirmation and delete item
+  const handleDeleteClick = (id) => {
+    setItemToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+    try {
+      await dispatch(deleteInventoryItem(itemToDelete)).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Inventory item deleted successfully",
+        severity: "success",
+      });
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err || "Failed to delete inventory item",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // ✅ Columns for MDDataGrid
   const columns = [
-    { field: "productName", headerName: "Product Name", flex: 1.5, width: 200 },
-    { field: "quantity", headerName: "Quantity", flex: 1.5, width: 150 },
-    { field: "usedQuantity", headerName: "Used Qty", flex: 1.5, width: 150 },
-    { field: "availableQuantity", headerName: "Available Qty", flex: 1.5, width: 150 },
-    { field: "status", headerName: "Status", flex: 1.5, width: 150 },
-    { field: "lowStockThreshold", headerName: "Low Stock", flex: 1.5, width: 150 },
+    { field: "productName", headerName: "Product Name", flex: 1.5, minWidth: 200 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 120 },
+    { field: "usedQuantity", headerName: "Used Qty", flex: 1, minWidth: 120 },
+    { field: "availableQuantity", headerName: "Available Qty", flex: 1, minWidth: 120 },
+    { field: "status", headerName: "Status", flex: 1, minWidth: 120 },
+    { field: "lowStockThreshold", headerName: "Low Stock", flex: 1, minWidth: 120 },
     {
       field: "actions",
       headerName: "Actions",
-  width: 150,
+      flex: 1,
+      minWidth: 130,
       sortable: false,
       renderCell: (params) => (
-        <Box gap={5}>
+        <Box>
           <Tooltip title="Edit">
             <IconButton
               size="small"
-              color="primary"
+            
               onClick={() => handleEdit(params.row.id)}
             >
               <EditIcon />
@@ -64,8 +104,8 @@ const InventoryView = () => {
           <Tooltip title="Delete">
             <IconButton
               size="small"
-              color="error"
-              onClick={() => handleDelete(params.row.id)}
+         
+              onClick={() => handleDeleteClick(params.row.id)}
             >
               <DeleteIcon />
             </IconButton>
@@ -75,12 +115,12 @@ const InventoryView = () => {
     },
   ];
 
-  // Filter rows based on search term
+  // ✅ Filter rows based on search term
   const filteredRows = useMemo(() => {
     if (!searchTerm) return items;
-    
+
     const searchLower = searchTerm.toLowerCase();
-    return items.filter(item => {
+    return items.filter((item) => {
       return (
         (item.productId?.name || "").toLowerCase().includes(searchLower) ||
         (item.status || "").toLowerCase().includes(searchLower) ||
@@ -92,8 +132,9 @@ const InventoryView = () => {
     });
   }, [items, searchTerm]);
 
+  // ✅ Transform backend data into DataGrid rows
   const rows = filteredRows.map((item) => ({
-    id: item._id, // required internally, but not displayed
+    id: item._id, // required unique ID
     productName: item.productId?.name || "N/A",
     quantity: item.quantity,
     usedQuantity: item.usedQuantity,
@@ -104,36 +145,52 @@ const InventoryView = () => {
 
   return (
     <Box p={2}>
-         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+      {/* Delete Confirmation Dialog */}
+      <DeleteInventory
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
+       
         
-            <MDSearchBar 
-              placeholder="Search inventory..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          
-         
-            <MDButton variant="gradient" color="info">
-              Add New Item
-            </MDButton>
-           
-         
-      
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Snackbar Alert */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      {/* Search bar + Add button */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <MDSearchBar
+          placeholder="Search inventory..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <MDButton variant="gradient" color="info">
+          Add New Item
+        </MDButton>
       </Box>
 
+      {/* Data Table */}
       {loading ? (
-        <CircularProgress />
+        <Box display="flex" justifyContent="center" alignItems="center" height="400px">
+          <CircularProgress />
+        </Box>
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : (
-        <Paper elevation={2} sx={{ height: 500, width: "100%" }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5, 10, 20]}
-            disableSelectionOnClick
-          />
+        <Paper elevation={0} sx={{ height: 500, width: "100%", p: 1 }}>
+          <MDDataGrid rows={rows} columns={columns} pageSize={5} />
         </Paper>
       )}
     </Box>
