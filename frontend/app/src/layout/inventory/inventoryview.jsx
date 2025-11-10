@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllInventory } from "../../Slice/inventorySlice";
 import {
@@ -9,7 +9,12 @@ import {
   Paper,
   IconButton,
   Tooltip,
+  Grid,
+  
 } from "@mui/material";
+import MDSearchBar from "../../custom/MDsearchbar";
+import MDButton from "../../custom/MDbutton";
+
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -17,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 const InventoryView = () => {
   const dispatch = useDispatch();
   const { items, loading, error } = useSelector((state) => state.inventory);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     dispatch(fetchAllInventory());
@@ -69,7 +75,24 @@ const InventoryView = () => {
     },
   ];
 
-  const rows = items.map((item) => ({
+  // Filter rows based on search term
+  const filteredRows = useMemo(() => {
+    if (!searchTerm) return items;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return items.filter(item => {
+      return (
+        (item.productId?.name || "").toLowerCase().includes(searchLower) ||
+        (item.status || "").toLowerCase().includes(searchLower) ||
+        (item.quantity?.toString() || "").includes(searchTerm) ||
+        (item.usedQuantity?.toString() || "").includes(searchTerm) ||
+        (item.availableQuantity?.toString() || "").includes(searchTerm) ||
+        (item.lowStockThreshold?.toString() || "").includes(searchTerm)
+      );
+    });
+  }, [items, searchTerm]);
+
+  const rows = filteredRows.map((item) => ({
     id: item._id, // required internally, but not displayed
     productName: item.productId?.name || "N/A",
     quantity: item.quantity,
@@ -81,7 +104,22 @@ const InventoryView = () => {
 
   return (
     <Box p={2}>
+         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        
+            <MDSearchBar 
+              placeholder="Search inventory..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          
+         
+            <MDButton variant="gradient" color="info">
+              Add New Item
+            </MDButton>
+           
+         
       
+      </Box>
 
       {loading ? (
         <CircularProgress />
