@@ -128,33 +128,42 @@ const inventorySlice = createSlice({
       })
 
     // Update inventory
+      .addCase(updateInventoryItem.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(updateInventoryItem.fulfilled, (state, action) => {
+        state.loading = false;
         const index = state.items.findIndex(item => item._id === action.payload._id);
         if (index !== -1) {
-          state.items[index] = action.payload;
+          state.items[index] = action.payload;  // Update the item in the list
         }
         if (state.currentItem?._id === action.payload._id) {
-          state.currentItem = action.payload;
+          state.currentItem = action.payload;   // Update current item if it's the one being edited
         }
+      })
+      .addCase(updateInventoryItem.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to update inventory';
       })
 
     // Delete inventory
       .addCase(deleteInventoryItem.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(deleteInventoryItem.fulfilled, (state, action) => {
-  state.loading = false;
-  state.items = state.items.filter((item) => item._id !== action.payload);
-  state.totalItems -= 1;
-  if (state.currentItem?._id === action.payload) {
-    state.currentItem = null;
-  }
-})
-.addCase(deleteInventoryItem.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-});
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteInventoryItem.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = state.items.filter((item) => item._id !== action.payload);
+        state.totalItems = Math.max(0, state.totalItems - 1);
+        if (state.currentItem?._id === action.payload) {
+          state.currentItem = null;
+        }
+      })
+      .addCase(deleteInventoryItem.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   }
 });
 

@@ -20,7 +20,7 @@ import MDDataGrid from "../../custom/MDdatagrid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import InventoryDelete from "./deleteInventory";
-
+import EditInventory from "./editinventory";
 const InventoryView = () => {
   const dispatch = useDispatch();
   const { items, loading, error } = useSelector((state) => state.inventory);
@@ -36,6 +36,8 @@ const InventoryView = () => {
   const [selectedId, setSelectedId] = useState(null);
 
   const [filteredItems, setFilteredItems] = useState([]);
+const [editDialogOpen, setEditDialogOpen] = useState(false);
+const [selectedItem, setSelectedItem] = useState(null);
 
   // ✅ Fetch inventory and keep only those where productId is NOT null
   useEffect(() => {
@@ -77,8 +79,11 @@ const InventoryView = () => {
   }, [dispatch]);
 
   const handleEdit = (id) => {
-    console.log("Edit clicked for ID:", id);
-  };
+  const itemToEdit = filteredItems.find((item) => item._id === id);
+  setSelectedItem(itemToEdit);
+  setEditDialogOpen(true);
+};
+
 
   const handleDeleteClick = (id) => {
     setSelectedId(id);
@@ -236,7 +241,41 @@ const InventoryView = () => {
         title="Delete Inventory"
         content="Are you sure you want to delete this inventory item? This action cannot be undone."
       />
+
+
+<EditInventory
+  open={editDialogOpen}
+  onClose={() => {
+    setEditDialogOpen(false);
+    setSelectedItem(null); // ✅ ensures dialog doesn’t reopen
+  }}
+  item={selectedItem}
+  onSuccess={(updatedItem) => {
+    // ✅ close dialog before updating table
+    setEditDialogOpen(false);
+    setSelectedItem(null);
+
+    // ✅ update table data
+    setFilteredItems((prevItems) =>
+      prevItems.map((inv) =>
+        inv._id === updatedItem._id ? { ...inv, ...updatedItem } : inv
+      )
+    );
+
+    // ✅ show success message
+    setSnackbar({
+      open: true,
+      message: "Inventory updated successfully",
+      severity: "success",
+    });
+  }}
+/>
+
+
+
+
     </Box>
+
   );
 };
 
