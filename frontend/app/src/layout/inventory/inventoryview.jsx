@@ -90,27 +90,30 @@ const [selectedItem, setSelectedItem] = useState(null);
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    try {
-      await dispatch(deleteInventoryItem(selectedId)).unwrap();
-      setFilteredItems((prev) => prev.filter((item) => item._id !== selectedId));
-      setSnackbar({
-        open: true,
-        message: "Inventory deleted successfully",
-        severity: "success",
-      });
-    } catch (error) {
-      console.error("Delete error:", error);
-      setSnackbar({
-        open: true,
-        message: error || "Failed to delete inventory",
-        severity: "error",
-      });
-    } finally {
-      setDeleteDialogOpen(false);
-      setSelectedId(null);
-    }
-  };
+ const handleConfirmDelete = async () => {
+  // Close dialog immediately
+  setDeleteDialogOpen(false);
+  setSelectedId(null);
+
+  try {
+    await dispatch(deleteInventoryItem(selectedId)).unwrap();
+    // Update local state
+    setFilteredItems((prev) => prev.filter((item) => item._id !== selectedId));
+    setSnackbar({
+      open: true,
+      message: "Inventory deleted successfully",
+      severity: "success",
+    });
+  } catch (error) {
+    console.error("Delete error:", error);
+    setSnackbar({
+      open: true,
+      message: error || "Failed to delete inventory",
+      severity: "error",
+    });
+  }
+};
+
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -243,15 +246,26 @@ const [selectedItem, setSelectedItem] = useState(null);
       />
 
 
-      <EditInventory
+   <EditInventory
   open={editDialogOpen}
   onClose={() => setEditDialogOpen(false)}
   item={selectedItem}
-  onSuccess={() => {
-    // ✅ Refresh updated inventory data
-    dispatch(fetchAllInventory());
+  onSuccess={(updatedItem) => {
+    // ✅ Update the local filteredItems array
+    setFilteredItems((prev) =>
+      prev.map((item) =>
+        item._id === updatedItem._id ? updatedItem : item
+      )
+    );
+
+    setSnackbar({
+      open: true,
+      message: "Inventory updated successfully",
+      severity: "success",
+    });
   }}
 />
+
 
     </Box>
 

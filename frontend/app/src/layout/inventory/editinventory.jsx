@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Button } from "@mui/material";
+import { Box, TextField, Button, CircularProgress } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { updateInventoryItem } from "../../Slice/inventorySlice";
 import MDDialogBox from "../../custom/MDdailogbox";
@@ -10,6 +10,7 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
     quantity: "",
     usedQuantity: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -25,41 +26,41 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
- const handleSubmit = async () => {
-  if (!item?._id) return;
+  const handleSubmit = async () => {
+    if (!item?._id) return;
 
-  const updatedItemTemp = {
-    ...item,
-    quantity: Number(formData.quantity),
-    usedQuantity: Number(formData.usedQuantity),
-    availableQuantity:
-      Number(formData.quantity) - Number(formData.usedQuantity),
-  };
-
-  try {
-    // ✅ Call backend
-    await dispatch(
-      updateInventoryItem({
-        id: item._id,
-        updateData: {
-          quantity: Number(formData.quantity),
-          usedQuantity: Number(formData.usedQuantity),
-        },
-      })
-    ).unwrap();
-
-    // ✅ Close dialog *immediately*
+    // ✅ Close dialog immediately
     onClose();
 
-    // ✅ Small delay before calling onSuccess (prevents re-render flicker)
-    setTimeout(() => {
-      if (onSuccess) onSuccess(updatedItemTemp);
-    }, 150);
-  } catch (error) {
-    console.error("Failed to update inventory:", error);
-  }
-};
+    setLoading(true);
 
+    const updatedItemTemp = {
+      ...item,
+      quantity: Number(formData.quantity),
+      usedQuantity: Number(formData.usedQuantity),
+      availableQuantity:
+        Number(formData.quantity) - Number(formData.usedQuantity),
+    };
+
+    try {
+      await dispatch(
+        updateInventoryItem({
+          id: item._id,
+          updateData: {
+            quantity: Number(formData.quantity),
+            usedQuantity: Number(formData.usedQuantity),
+          },
+        })
+      ).unwrap();
+
+      // ✅ Update parent state/UI after backend confirms update
+      if (onSuccess) onSuccess(updatedItemTemp);
+    } catch (error) {
+      console.error("Failed to update inventory:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!item) return null;
 
@@ -79,8 +80,9 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
             onClick={handleSubmit}
             variant="contained"
             color="primary"
+            disabled={loading}
           >
-            Update
+            {loading ? <CircularProgress size={24} /> : "Update"}
           </Button>
         </>
       }

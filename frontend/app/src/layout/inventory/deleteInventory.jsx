@@ -40,3 +40,6 @@ const InventoryDelete = ({
 };
 
 export default InventoryDelete;
+
+
+
