@@ -1,3 +1,7 @@
+
+
+
+
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllInventory, deleteInventoryItem } from "../../Slice/inventorySlice";
@@ -12,181 +16,138 @@ import {
   Snackbar,
 } from "@mui/material";
 import MDSearchBar from "../../custom/MDsearchbar";
-import MDButton from "../../custom/MDbutton";
-import DeleteInventory from "./deleteInventory";
+import MDDataGrid from "../../custom/MDdatagrid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import MDDataGrid from "../../custom/MDdatagrid"; // ✅ use custom MDDataGrid
-
+import InventoryDelete from "./deleteInventory";
+import EditInventory from "./editinventory";
 const InventoryView = () => {
   const dispatch = useDispatch();
-  const { items, loading, error, deleteLoading } = useSelector(
-    (state) => state.inventory
-  );
+  const { items, loading, error } = useSelector((state) => state.inventory);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
 
-  // Fetch data when component mounts and when it becomes visible
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const [filteredItems, setFilteredItems] = useState([]);
+const [editDialogOpen, setEditDialogOpen] = useState(false);
+const [selectedItem, setSelectedItem] = useState(null);
+
+  // ✅ Fetch inventory and keep only those where productId is NOT null
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await dispatch(fetchAllInventory());
+        const res = await dispatch(fetchAllInventory()).unwrap();
+
+        // ✅ Some APIs return { success, data: [...] } — handle both cases safely
+        const inventoryData = res?.data || res;
+
+        // ✅ Filter only those having productId (not null)
+        const validItems = Array.isArray(inventoryData)
+          ? inventoryData.filter((item) => item.productId && item.productId._id)
+          : [];
+
+        setFilteredItems(validItems);
       } catch (error) {
-        console.error('Error fetching inventory:', error);
+        console.error("Error fetching inventory:", error);
         setSnackbar({
           open: true,
-          message: 'Failed to load inventory',
-          severity: 'error',
+          message: "Failed to load inventory",
+          severity: "error",
         });
       }
     };
 
-    // Set up visibility change listener
+    fetchData();
+
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         fetchData();
       }
     };
 
-    // Initial fetch
-    fetchData();
-
-    // Add visibility change listener
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Cleanup
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [dispatch]);
 
-  // Log the items for debugging
-  useEffect(() => {
-    console.log('Inventory items:', items);
-  }, [items]);
-
   const handleEdit = (id) => {
-    console.log("Edit clicked for ID:", id);
-    // TODO: open edit dialog or navigate to edit page
-  };
+  const itemToEdit = filteredItems.find((item) => item._id === id);
+  setSelectedItem(itemToEdit);
+  setEditDialogOpen(true);
+};
+
 
   const handleDeleteClick = (id) => {
-    setItemToDelete(id);
+    setSelectedId(id);
     setDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!itemToDelete) return;
     try {
-      await dispatch(deleteInventoryItem(itemToDelete)).unwrap();
+      await dispatch(deleteInventoryItem(selectedId)).unwrap();
+      setFilteredItems((prev) => prev.filter((item) => item._id !== selectedId));
       setSnackbar({
         open: true,
-        message: "Inventory item deleted successfully",
+        message: "Inventory deleted successfully",
         severity: "success",
       });
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
-    } catch (err) {
+    } catch (error) {
+      console.error("Delete error:", error);
       setSnackbar({
         open: true,
-        message: err || "Failed to delete inventory item",
+        message: error || "Failed to delete inventory",
         severity: "error",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setSelectedId(null);
     }
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
-    setItemToDelete(null);
   };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // Group inventory items by product ID and calculate totals
-  const groupedInventory = useMemo(() => {
-    if (!items || !Array.isArray(items)) return [];
-    
-    // First filter out items with null productId or missing product reference
-    const validItems = items.filter(item => {
-      const hasProduct = Boolean(item.product || item.productId);
-      return hasProduct && item.productId !== null && item.productId !== undefined;
-    });
-    
-    const grouped = validItems.reduce((acc, item) => {
-      const productId = item.product?._id || item.productId?._id;
-      const productName = item.product?.name || item.productId?.name;
-      
-      // Skip if we still somehow got a null product (shouldn't happen due to filter above)
-      if (!productId) return acc;
-      
-      if (!acc[productId]) {
-        acc[productId] = {
-          id: productId,
-          productId: productId,
-          productName: productName,
-          totalQuantity: 0,
-          usedQuantity: 0,
-          availableQuantity: 0,
-          items: []
-        };
-      }
-      
-      acc[productId].totalQuantity += item.quantity || 0;
-      acc[productId].usedQuantity += item.usedQuantity || 0;
-      acc[productId].availableQuantity += (item.quantity || 0) - (item.usedQuantity || 0);
-      acc[productId].items.push(item);
-      
-      return acc;
-    }, {});
-    
-    return Object.values(grouped);
-  }, [items]);
+ 
 
-  // Filter based on search term
-  const filteredInventory = useMemo(() => {
-    if (!searchTerm) return groupedInventory;
-    
+  const processedInventory = useMemo(() => {
+  if (!Array.isArray(filteredItems)) return [];
+  return filteredItems.map((item) => ({
+    id: item._id, // required by DataGrid
+    _id: item._id,
+    productName: item.productId?.name || "Unknown Product",
+    quantity: item.quantity || 0,
+    usedQuantity: item.usedQuantity || 0,
+    availableQuantity:
+      item.availableQuantity ?? (item.quantity || 0) - (item.usedQuantity || 0),
+    createdAt: new Date(item.createdAt).toLocaleString(), // ✅ formatted date
+  }));
+}, [filteredItems]);
+
+
+  // ✅ Apply search
+  const displayedInventory = useMemo(() => {
+    if (!searchTerm) return processedInventory;
     const searchLower = searchTerm.toLowerCase();
-    return groupedInventory.filter(item => 
+    return processedInventory.filter((item) =>
       item.productName.toLowerCase().includes(searchLower)
     );
-  }, [groupedInventory, searchTerm]);
+  }, [processedInventory, searchTerm]);
 
-  // ✅ Columns for MDDataGrid
   const columns = [
-    { 
-      field: "productName", 
-      headerName: "Product Name", 
-      flex: 1.5, 
-      minWidth: 200 
-    },
-    { 
-      field: "totalQuantity", 
-      headerName: "Total Quantity", 
-      flex: 1, 
-      minWidth: 120 
-    },
-    { 
-      field: "usedQuantity", 
-      headerName: "Used Quantity", 
-      flex: 1, 
-      minWidth: 120 
-    },
-    { 
-      field: "availableQuantity", 
-      headerName: "Available Quantity", 
-      flex: 1, 
-      minWidth: 120 
-    },
+    { field: "productName", headerName: "Product Name", minWidth: 200 },
+    { field: "quantity", headerName: "Total Quantity", flex: 1, minWidth: 120 },
+    { field: "usedQuantity", headerName: "Used Quantity", flex: 1, minWidth: 120 },
+    { field: "availableQuantity", headerName: "Available Quantity", flex: 1, minWidth: 120 },
+      { field: "createdAt", headerName: "Created At", flex: 1.2, minWidth: 180 }, // ✅ new column
     {
       field: "actions",
       headerName: "Actions",
@@ -196,19 +157,16 @@ const InventoryView = () => {
       renderCell: (params) => (
         <Box>
           <Tooltip title="Edit">
-            <IconButton
-              size="small"
-            
-              onClick={() => handleEdit(params.row.id)}
-            >
+            <IconButton size="small" onClick={() => handleEdit(params.row._id)}>
               <EditIcon />
             </IconButton>
           </Tooltip>
+
           <Tooltip title="Delete">
             <IconButton
               size="small"
-         
-              onClick={() => handleDeleteClick(params.row.id)}
+              color="error"
+              onClick={() => handleDeleteClick(params.row._id)}
             >
               <DeleteIcon />
             </IconButton>
@@ -218,7 +176,6 @@ const InventoryView = () => {
     },
   ];
 
-  // Render loading state
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="300px">
@@ -227,7 +184,6 @@ const InventoryView = () => {
     );
   }
 
-  // Render error state
   if (error) {
     return (
       <Box p={3}>
@@ -236,8 +192,7 @@ const InventoryView = () => {
     );
   }
 
-  // Render empty state
-  if (filteredInventory.length === 0) {
+  if (displayedInventory.length === 0) {
     return (
       <Box p={3} textAlign="center">
         <Typography variant="h6">No inventory items found</Typography>
@@ -247,17 +202,6 @@ const InventoryView = () => {
 
   return (
     <Box p={2}>
-      {/* Delete Confirmation Dialog */}
-      <DeleteInventory
-        open={deleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-        onConfirm={handleConfirmDelete}
-        loading={deleteLoading}
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
-
-      {/* Snackbar Alert */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -269,35 +213,48 @@ const InventoryView = () => {
         </Alert>
       </Snackbar>
 
-      {/* Search bar + Add button */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <MDSearchBar
           placeholder="Search inventory..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-       
       </Box>
 
-      {/* Data Table */}
       <Paper elevation={0} sx={{ height: 500, width: "100%", p: 1 }}>
         <MDDataGrid
-          rows={filteredInventory}
+          rows={displayedInventory}
           columns={columns}
+          getRowId={(row) => row._id}
           pageSize={10}
           rowsPerPageOptions={[5, 10, 20]}
           disableSelectionOnClick
           loading={loading}
-          components={{
-            NoRowsOverlay: () => (
-              <Box p={2} textAlign="center">
-                <Typography>No inventory items found</Typography>
-              </Box>
-            ),
-          }}
         />
       </Paper>
+
+      {/* ✅ Delete Confirmation Dialog */}
+      <InventoryDelete
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Inventory"
+        content="Are you sure you want to delete this inventory item? This action cannot be undone."
+      />
+
+
+      <EditInventory
+  open={editDialogOpen}
+  onClose={() => setEditDialogOpen(false)}
+  item={selectedItem}
+  onSuccess={() => {
+    // ✅ Refresh updated inventory data
+    dispatch(fetchAllInventory());
+  }}
+/>
+
     </Box>
+
   );
 };
 
