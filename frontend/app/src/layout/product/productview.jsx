@@ -158,29 +158,25 @@ const ProductView = () => {
       headerName: "Categories",
       flex: 1,
       renderCell: (params) => (
-        <Typography variant="body2" noWrap>
-          {formatCategories(params.value)}
-        </Typography>
+      <>  {formatCategories(params.value)}</>
+         
+      
       ),
     },
     {
       field: "gstPercentage",
       headerName: "GST (%)",
-      flex: 0.5,
+  flex:1,
       renderCell: (params) => (
-        <Typography variant="body2">
-          {params.value ? `${params.value}%` : "0%"}
-        </Typography>
+        <> {params.value ? `${params.value}%` : "0%"}</>
       ),
     },
     {
       field: "inventory",
       headerName: "Total Quantity",
-      flex: 0.7,
+      flex: 1,
       renderCell: (params) => (
-        <Typography variant="body2">
-          {params.row.inventory?.totalQuantity ?? 0}
-        </Typography>
+       <>{params.row.inventory?.totalQuantity ?? 0}</>
       ),
     },
     {
@@ -188,7 +184,7 @@ const ProductView = () => {
       headerName: "Actions",
       flex: 1,
       renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={1}>
+        <Box display="flex" alignItems="center" gap={1} mt={1}>
           <Tooltip title="Edit">
             <IconButton
             

@@ -57,21 +57,11 @@ const handleDeleteClick = (category) => {
       flex: 2,
       minWidth: 300,
       renderCell: (params) => (
-        <Typography
-          variant="body2"
-          sx={{
-            whiteSpace: "normal",
-            lineHeight: "1.2",
-            maxHeight: "3.6em",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {params.value}
-        </Typography>
+       
+          
+        
+         <> {params.value}</>
+     
       ),
     },
     
