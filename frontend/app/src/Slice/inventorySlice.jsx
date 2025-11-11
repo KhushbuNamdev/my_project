@@ -42,10 +42,13 @@ export const deleteInventoryItem = createAsyncThunk(
   'inventory/delete',
   async (id, { rejectWithValue }) => {
     try {
-      await inventoryApi.deleteInventory(id);
+      const response = await inventoryApi.deleteInventory(id);
+      if (response.data && response.data.success === false) {
+        throw new Error(response.data.message || 'Failed to delete inventory');
+      }
       return id;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete inventory');
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to delete inventory');
     }
   }
 );
@@ -136,13 +139,22 @@ const inventorySlice = createSlice({
       })
 
     // Delete inventory
-      .addCase(deleteInventoryItem.fulfilled, (state, action) => {
-        state.items = state.items.filter(item => item._id !== action.payload);
-        state.totalItems -= 1;
-        if (state.currentItem?._id === action.payload) {
-          state.currentItem = null;
-        }
-      });
+      .addCase(deleteInventoryItem.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(deleteInventoryItem.fulfilled, (state, action) => {
+  state.loading = false;
+  state.items = state.items.filter((item) => item._id !== action.payload);
+  state.totalItems -= 1;
+  if (state.currentItem?._id === action.payload) {
+    state.currentItem = null;
+  }
+})
+.addCase(deleteInventoryItem.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
   }
 });
 

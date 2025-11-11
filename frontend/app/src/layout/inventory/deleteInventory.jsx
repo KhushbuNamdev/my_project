@@ -1,8 +1,15 @@
+// src/components/Inventory/InventoryDelete.jsx
 import React from "react";
-import { Box, Typography, Button } from "@mui/material";
-import MDDialogBox from "../../custom/MDdailogbox"; // ✅ import your custom MDDialogBox
-import MDButton from "../../custom/MDbutton";
-const DeleteInventory = ({
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+} from "@mui/material";
+
+const InventoryDelete = ({
   open,
   onClose,
   onConfirm,
@@ -10,36 +17,30 @@ const DeleteInventory = ({
   content = "Are you sure you want to delete this inventory item? This action cannot be undone.",
   confirmText = "Delete",
   cancelText = "Cancel",
-  loading = false,
 }) => {
   return (
-    <MDDialogBox
+    <Dialog
       open={open}
-      onClose={!loading ? onClose : null}
-      title={title}
-      actions={
-        <>
-          <MDButton onClick={onClose} disabled={loading} variant="outlined" color="inherit">
-            {cancelText}
-          </MDButton>
-          <MDButton
-            onClick={onConfirm}
-          
-         
-            disabled={loading}
-          >
-            {loading ? "Deleting..." : confirmText}
-          </MDButton>
-        </>
-      }
+      onClose={onClose}
+      aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-description"
     >
-      <Box>
-        <Typography variant="body1" color="text.primary">
+      <DialogTitle id="delete-dialog-title">{title}</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="delete-dialog-description">
           {content}
-        </Typography>
-      </Box>
-    </MDDialogBox>
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="inherit">
+          {cancelText}
+        </Button>
+        <Button onClick={onConfirm} color="error" variant="contained" autoFocus>
+          {confirmText}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-export default DeleteInventory;
+export default InventoryDelete;

@@ -30,7 +30,7 @@ export const inventoryApi = {
 
   // Delete inventory
   deleteInventory: (id) => 
-    api.delete(`${INVENTORY_API_BASE_URL}/${id}`),
+   api.delete(`${INVENTORY_API_BASE_URL}/${id}`),
 
   // Update stock (quantity/usedQuantity)
   updateStock: (id, updateData) => 
