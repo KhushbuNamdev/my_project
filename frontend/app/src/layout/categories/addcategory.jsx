@@ -1,39 +1,40 @@
-import React, { useState, useEffect } from "react";
-import {
-  TextField,
-  Button,
-  CircularProgress,
-  Alert,
-  Box,
-} from "@mui/material";
+import React, { useEffect } from "react";
+import { TextField, CircularProgress, Box, Alert } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { createNewCategory, resetCategoryState } from "../../Slice/categorySlice";
 import MDDialogBox from "../../custom/MDdialogbox";
 import MDButton from "../../custom/MDbutton";
+
 const AddCategory = ({ open, onClose, onSuccess }) => {
   const dispatch = useDispatch();
   const { loading, error, success } = useSelector((state) => state.category);
 
-  const [formData, setFormData] = useState({ name: "", description: "" });
-
-  // ✅ Handle successful creation
+  // Reset form and handle success
   useEffect(() => {
     if (success) {
-      setFormData({ name: "", description: "" });
+      formik.resetForm();
       dispatch(resetCategoryState());
-      onClose(); // close dialog
-      onSuccess?.(); // refresh category list
+      onClose();
+      onSuccess?.();
     }
   }, [success, dispatch, onClose, onSuccess]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Formik + Yup
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Category name is required"),
+    description: Yup.string(),
+  });
 
-  const handleSubmit = () => {
-    if (!formData.name.trim()) return;
-    dispatch(createNewCategory(formData));
-  };
+  const formik = useFormik({
+    initialValues: { name: "", description: "" },
+    validationSchema,
+    onSubmit: (values) => {
+      dispatch(createNewCategory(values));
+    },
+    enableReinitialize: true,
+  });
 
   return (
     <MDDialogBox
@@ -41,39 +42,44 @@ const AddCategory = ({ open, onClose, onSuccess }) => {
       onClose={onClose}
       title="Add New Category"
       actions={
-        <>
-         
-          <MDButton
-            onClick={handleSubmit}
-           
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Create"}
-          </MDButton>
-        </>
+        <MDButton
+          onClick={formik.handleSubmit}
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          {loading ? "Creating..." : "Create"}
+        </MDButton>
       }
     >
-      <Box display="flex" flexDirection="column" gap={2} mt={1}>
-        {error && <Alert severity="error">{error}</Alert>}
+      <form onSubmit={formik.handleSubmit}>
+        <Box display="flex" flexDirection="column" gap={2} mt={1}>
+          {error && <Alert severity="error">{error}</Alert>}
 
-        <TextField
-          label="Category Name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          fullWidth
-          required
-        />
-        <TextField
-          label="Description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          fullWidth
-          multiline
-         
-        />
-      </Box>
+          <TextField
+            label="Category Name"
+            name="name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            fullWidth
+            required
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
+          />
+
+          <TextField
+            label="Description"
+            name="description"
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            fullWidth
+            multiline
+            error={formik.touched.description && Boolean(formik.errors.description)}
+            helperText={formik.touched.description && formik.errors.description}
+          />
+        </Box>
+      </form>
     </MDDialogBox>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   TextField,
   CircularProgress,
@@ -10,6 +10,8 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import {
   updateExistingCategory,
   resetCategoryState,
@@ -21,38 +23,48 @@ const EditCategory = ({ open, onClose, category, onSuccess }) => {
   const dispatch = useDispatch();
   const { loading, error, success } = useSelector((state) => state.category);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    status: "active",
+  // Formik + Yup validation
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Category name is required"),
+    description: Yup.string().required("Description is required"),
+    status: Yup.string().oneOf(["active", "inactive"]).required("Status is required"),
   });
 
-  useEffect(() => {
-    // Fill form with selected category data
-    if (category) {
-      setFormData({
-        name: category.name || "",
-        description: category.description || "",
-        status: category.status || "active",
-      });
-    }
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      name: category?.name || "",
+      description: category?.description || "",
+      status: category?.status || "active",
+    },
+    validationSchema,
+    onSubmit: (values, { setErrors }) => {
+      if (!category?._id) return;
 
-    // Close dialog & refresh list after successful update
+      // Check if anything changed
+      const isUnchanged =
+        values.name === (category?.name || "") &&
+        values.description === (category?.description || "") &&
+        values.status === (category?.status || "active");
+
+      if (isUnchanged) {
+        setErrors({ name: "Please update at least one field" });
+        return;
+      }
+
+      dispatch(updateExistingCategory({ id: category._id, updateData: values }));
+    },
+  });
+
+  // Handle success: reset form, close dialog, refresh list
+  useEffect(() => {
     if (success) {
+      formik.resetForm();
       dispatch(resetCategoryState());
       onClose();
       onSuccess?.();
     }
-  }, [category, success, dispatch, onClose, onSuccess]);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleUpdate = () => {
-    if (!category?._id) return;
-    dispatch(updateExistingCategory({ id: category._id, updateData: formData }));
-  };
+  }, [success, dispatch, onClose, onSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <MDDialogBox
@@ -60,44 +72,81 @@ const EditCategory = ({ open, onClose, category, onSuccess }) => {
       onClose={onClose}
       title="Edit Category"
       actions={
-        <MDButton onClick={handleUpdate} disabled={loading}>
-          {loading ? <CircularProgress size={24} color="inherit" /> : "Save Changes"}
+        <MDButton
+          onClick={async () => {
+            // Validate all fields
+            const errors = await formik.validateForm();
+
+            if (Object.keys(errors).length > 0) {
+              // Mark all fields as touched to show errors
+              formik.setTouched({
+                name: true,
+                description: true,
+                status: true,
+              });
+              return;
+            }
+
+            // Dispatch formik submit if valid
+            formik.handleSubmit();
+          }}
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          {loading ? "Saving..." : "Save Changes"}
         </MDButton>
       }
     >
-      <Box display="flex" flexDirection="column" gap={2} mt={1}>
-        {error && <Alert severity="error">{error}</Alert>}
+      <form onSubmit={formik.handleSubmit}>
+        <Box display="flex" flexDirection="column" gap={2} mt={1}>
+          {/* Show general error from backend */}
+          {error && <Alert severity="error">{error}</Alert>}
 
-        <TextField
-          label="Category Name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          fullWidth
-          required
-        />
-        <TextField
-          label="Description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          fullWidth
-          multiline
-        />
+          <TextField
+            label="Category Name"
+            name="name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            fullWidth
+            required
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
+          />
 
-        <FormControl fullWidth>
-          <InputLabel>Status</InputLabel>
-          <Select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            label="Status"
-          >
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="inactive">Inactive</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+          <TextField
+            label="Description"
+            name="description"
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            fullWidth
+            multiline
+            required
+            error={formik.touched.description && Boolean(formik.errors.description)}
+            helperText={formik.touched.description && formik.errors.description}
+          />
+
+          <FormControl fullWidth error={formik.touched.status && Boolean(formik.errors.status)}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              name="status"
+              value={formik.values.status}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              label="Status"
+            >
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="inactive">Inactive</MenuItem>
+            </Select>
+            {formik.touched.status && formik.errors.status && (
+              <Box mt={0.5} ml={1} color="error.main" fontSize={12}>
+                {formik.errors.status}
+              </Box>
+            )}
+          </FormControl>
+        </Box>
+      </form>
     </MDDialogBox>
   );
 };

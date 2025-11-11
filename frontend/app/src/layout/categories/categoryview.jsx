@@ -14,7 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { fetchCategories } from "../../Slice/categorySlice";
 import MDSearchBar from "../../custom/MDsearchbar";
 import MDDataGrid from "../../custom/MDdatagrid";
-import AddCategory from "./AddCategory";
+import AddCategory from "./addcategory";      
 import EditCategory from "./editcategory"; // ✅ new import
 import DeleteCategoryDialog from "./deletecategory";
 import MDButton from "../../custom/MDbutton";

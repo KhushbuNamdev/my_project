@@ -31,6 +31,7 @@ const InventoryView = () => {
     message: "",
     severity: "success",
   });
+  const [tableLoading, setTableLoading] = useState(false);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -114,6 +115,29 @@ const [selectedItem, setSelectedItem] = useState(null);
   }
 };
 
+
+
+const handleUpdateSuccess = async () => {
+  // ✅ Start table loading
+  setTableLoading(true);
+
+  try {
+    const res = await dispatch(fetchAllInventory()).unwrap();
+    const inventoryData = res?.data || res;
+    const validItems = Array.isArray(inventoryData)
+      ? inventoryData.filter((item) => item.productId && item.productId._id)
+      : [];
+    setFilteredItems(validItems);
+  } catch (err) {
+    setSnackbar({
+      open: true,
+      message: "Failed to refresh inventory",
+      severity: "error",
+    });
+  } finally {
+    setTableLoading(false);
+  }
+};
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -226,14 +250,14 @@ const [selectedItem, setSelectedItem] = useState(null);
 
       <Paper elevation={0} sx={{ height: 500, width: "100%", p: 1 }}>
         <MDDataGrid
-          rows={displayedInventory}
-          columns={columns}
-          getRowId={(row) => row._id}
-          pageSize={10}
-          rowsPerPageOptions={[5, 10, 20]}
-          disableSelectionOnClick
-          loading={loading}
-        />
+  rows={displayedInventory}
+  columns={columns}
+  getRowId={(row) => row._id}
+  pageSize={10}
+  rowsPerPageOptions={[5, 10, 20]}
+  disableSelectionOnClick
+  loading={loading || tableLoading} // ✅ show loading when table fetches
+/>
       </Paper>
 
       {/* ✅ Delete Confirmation Dialog */}
@@ -246,25 +270,14 @@ const [selectedItem, setSelectedItem] = useState(null);
       />
 
 
-   <EditInventory
+   
+<EditInventory
   open={editDialogOpen}
   onClose={() => setEditDialogOpen(false)}
   item={selectedItem}
-  onSuccess={(updatedItem) => {
-    // ✅ Update the local filteredItems array
-    setFilteredItems((prev) =>
-      prev.map((item) =>
-        item._id === updatedItem._id ? updatedItem : item
-      )
-    );
-
-    setSnackbar({
-      open: true,
-      message: "Inventory updated successfully",
-      severity: "success",
-    });
-  }}
+  onSuccess={handleUpdateSuccess} // ✅ after update, refetch table
 />
+
 
 
     </Box>
