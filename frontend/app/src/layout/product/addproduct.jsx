@@ -19,7 +19,7 @@ import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "../../Slice/categorySlice";
 import { createNewProduct } from "../../Slice/productSlice";
-import MDDialogBox from "../../custom/MDdailogbox";
+import MDDialogBox from "../../custom/MDdialogbox";
 import MDButton from "../../custom/MDbutton";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 const AddProduct = ({ open, onClose, onSuccess }) => {

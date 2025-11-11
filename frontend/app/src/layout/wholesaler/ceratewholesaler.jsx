@@ -3,7 +3,7 @@ import { TextField, Grid, Typography, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
-import MDDialogBox from '../../custom/MDdailogbox';
+import MDDialogBox from '../../custom/MDdialogbox';
 import MDButton from '../../custom/MDbutton';
 
 const CreateWholesaler = ({ open, onClose, onCreate, loading = false, error = null }) => {

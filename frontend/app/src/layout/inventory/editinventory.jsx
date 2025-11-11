@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Button, CircularProgress } from "@mui/material";
+import { Box, TextField, Button, CircularProgress, Typography } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { updateInventoryItem } from "../../Slice/inventorySlice";
-import MDDialogBox from "../../custom/MDdailogbox";
-
+import MDDialogBox from "../../custom/MDdialogbox";
+import MDButton from "../../custom/MDbutton";
 const EditInventory = ({ open, onClose, item, onSuccess }) => {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
@@ -11,6 +11,7 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
     usedQuantity: "",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // ✅ For validation error
 
   useEffect(() => {
     if (item) {
@@ -18,16 +19,26 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
         quantity: item.quantity || 0,
         usedQuantity: item.usedQuantity || 0,
       });
+      setError(""); // Reset error on item change
     }
   }, [item]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // ✅ Reset error when user types
+    if (error) setError("");
   };
 
   const handleSubmit = async () => {
     if (!item?._id) return;
+
+    // ✅ Validate before submitting
+    if (Number(formData.usedQuantity) > Number(formData.quantity)) {
+      setError("Used Quantity cannot exceed Total Quantity");
+      return;
+    }
 
     // ✅ Close dialog immediately
     onClose();
@@ -73,17 +84,14 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
       fullWidth
       actions={
         <>
-          <Button onClick={onClose} color="inherit">
-            Cancel
-          </Button>
-          <Button
+         
+          <MDButton
             onClick={handleSubmit}
-            variant="contained"
-            color="primary"
+          
             disabled={loading}
           >
             {loading ? <CircularProgress size={24} /> : "Update"}
-          </Button>
+          </MDButton>
         </>
       }
     >
@@ -109,6 +117,8 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
           value={formData.usedQuantity}
           onChange={handleChange}
           fullWidth
+          error={!!error} // ✅ Show red border if error
+          helperText={error} // ✅ Show error message below field
         />
       </Box>
     </MDDialogBox>

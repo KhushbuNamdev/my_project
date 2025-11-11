@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   TextField,
-  Button,
   CircularProgress,
   Alert,
   Box,
@@ -15,7 +14,7 @@ import {
   updateExistingCategory,
   resetCategoryState,
 } from "../../Slice/categorySlice";
-import MDDialogBox from "../../custom/MDdailogbox";
+import MDDialogBox from "../../custom/MDdialogbox";
 import MDButton from "../../custom/MDbutton";
 
 const EditCategory = ({ open, onClose, category, onSuccess }) => {
@@ -28,8 +27,8 @@ const EditCategory = ({ open, onClose, category, onSuccess }) => {
     status: "active",
   });
 
-  // Fill form with selected category data when dialog opens
   useEffect(() => {
+    // Fill form with selected category data
     if (category) {
       setFormData({
         name: category.name || "",
@@ -37,16 +36,14 @@ const EditCategory = ({ open, onClose, category, onSuccess }) => {
         status: category.status || "active",
       });
     }
-  }, [category]);
 
-  // Close dialog & refresh list after success
-  useEffect(() => {
+    // Close dialog & refresh list after successful update
     if (success) {
       dispatch(resetCategoryState());
       onClose();
       onSuccess?.();
     }
-  }, [success, dispatch, onClose, onSuccess]);
+  }, [category, success, dispatch, onClose, onSuccess]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -63,16 +60,9 @@ const EditCategory = ({ open, onClose, category, onSuccess }) => {
       onClose={onClose}
       title="Edit Category"
       actions={
-        <>
-          
-          <MDButton
-            onClick={handleUpdate}
-            
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Save Changes"}
-          </MDButton>
-        </>
+        <MDButton onClick={handleUpdate} disabled={loading}>
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Save Changes"}
+        </MDButton>
       }
     >
       <Box display="flex" flexDirection="column" gap={2} mt={1}>
@@ -93,7 +83,6 @@ const EditCategory = ({ open, onClose, category, onSuccess }) => {
           onChange={handleChange}
           fullWidth
           multiline
-       
         />
 
         <FormControl fullWidth>

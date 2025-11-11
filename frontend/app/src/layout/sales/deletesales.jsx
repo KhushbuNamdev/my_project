@@ -1,21 +1,20 @@
-import React, { useState } from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
-import WarningIcon from '@mui/icons-material/Warning';
-import { useDispatch } from 'react-redux';
-import { deleteUser, getAllUsers } from '../../Slice/userSlice';
-import MDDialogBox from '../../custom/MDdailogbox';
-import MDButton from '../../custom/MDbutton';
+// src/components/User/DeleteSalesDialog.jsx
+import React, { useState } from "react";
+import { CircularProgress, Typography, Box } from "@mui/material";
+import WarningIcon from "@mui/icons-material/Warning";
+import { useDispatch } from "react-redux";
+import { deleteUser, getAllUsers } from "../../Slice/userSlice";
+import ConfirmDialog from "../../custom/confirmdialog";
 
 const DeleteSalesDialog = ({ open, onClose, salesId, onDeleteSuccess }) => {
   const dispatch = useDispatch();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async (e) => {
-    e.preventDefault();
+  const handleDelete = async () => {
     try {
       setIsDeleting(true);
       await dispatch(deleteUser(salesId)).unwrap();
-      
+
       // Refresh sales list
       await dispatch(getAllUsers());
 
@@ -25,47 +24,34 @@ const DeleteSalesDialog = ({ open, onClose, salesId, onDeleteSuccess }) => {
       // Close dialog
       onClose();
     } catch (error) {
-      console.error('Error deleting salesperson:', error);
+      console.error("Error deleting salesperson:", error);
     } finally {
       setIsDeleting(false);
     }
   };
 
   return (
-    <MDDialogBox
+    <ConfirmDialog
       open={open}
       onClose={onClose}
+      onConfirm={handleDelete}
       title="Delete Salesperson"
-      actions={null}
-      maxWidth="sm"
-      fullWidth
-    >
-      <Box
-        component="form"
-        onSubmit={handleDelete}
-        sx={{ display: 'flex', flexDirection: 'column' }}
-      >
-        <Box display="flex" alignItems="center">
-          <WarningIcon color="error" fontSize="large" />
+      message={
+        <Box display="flex" alignItems="center" gap={1}>
+         
           <Typography variant="body1">
             Are you sure you want to delete this salesperson? <br />
-            <strong>This action cannot be undone.</strong>
+           This action cannot be undone.
           </Typography>
         </Box>
-
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 1 }}>
-         
-          <MDButton
-            type="submit"
-            color="error"
-            disabled={isDeleting}
-            startIcon={isDeleting ? <CircularProgress size={20} /> : null}
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </MDButton>
+      }
+      confirmLabel={
+        <Box display="flex" alignItems="center" gap={1}>
+          {isDeleting && <CircularProgress size={20} />}
+          {isDeleting ? "Deleting..." : "Delete"}
         </Box>
-      </Box>
-    </MDDialogBox>
+      }
+    />
   );
 };
 

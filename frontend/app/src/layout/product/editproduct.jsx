@@ -14,7 +14,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { updateExistingProduct } from '../../Slice/productSlice';
 import { fetchCategories } from '../../Slice/categorySlice';
-import MDDialogBox from '../../custom/MDdailogbox'; // 🔥 Use your custom MDDialogBox
+import MDDialogBox from '../../custom/MDdialogbox'; // 🔥 Use your custom MDDialogBox
 import MDButton from "../../custom/MDbutton"
 const EditProduct = ({ 
   open, 
@@ -39,23 +39,23 @@ const EditProduct = ({
   });
 
   // Initialize form with product data
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || '',
-        categoryIds: Array.isArray(product.categoryIds) 
-          ? product.categoryIds.map(cat => typeof cat === 'object' ? cat._id : cat)
-          : [],
-      });
-    }
-  }, [product]);
+useEffect(() => {
+  // Initialize form if product exists
+  if (product) {
+    setFormData({
+      name: product.name || '',
+      categoryIds: Array.isArray(product.categoryIds)
+        ? product.categoryIds.map(cat => typeof cat === 'object' ? cat._id : cat)
+        : [],
+    });
+  }
 
-  // Load categories if not already loaded
-  useEffect(() => {
-    if (open && categories.length === 0) {
-      dispatch(fetchCategories());
-    }
-  }, [open, dispatch, categories.length]);
+  // Fetch categories if dialog is open and categories are empty
+  if (open && categories.length === 0) {
+    dispatch(fetchCategories());
+  }
+}, [product, open, categories.length, dispatch]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

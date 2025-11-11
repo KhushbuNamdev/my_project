@@ -168,7 +168,7 @@ const [selectedItem, setSelectedItem] = useState(null);
           <Tooltip title="Delete">
             <IconButton
               size="small"
-              color="error"
+        
               onClick={() => handleDeleteClick(params.row._id)}
             >
               <DeleteIcon />

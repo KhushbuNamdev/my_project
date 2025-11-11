@@ -1,10 +1,10 @@
+// src/components/Category/DeleteCategoryDialog.jsx
 import React, { useState } from "react";
-import { Button, Typography, CircularProgress, Box } from "@mui/material";
-import WarningIcon from "@mui/icons-material/Warning";
+import { CircularProgress } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { removeCategory, fetchCategories } from "../../Slice/categorySlice";
-import MDDialogBox from "../../custom/MDdailogbox";
-import MDButton from "../../custom/MDbutton";
+import ConfirmDialog from "../../custom/confirmdialog"; // import your reusable dialog
+
 const DeleteCategoryDialog = ({ open, onClose, categoryId }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -23,32 +23,14 @@ const DeleteCategoryDialog = ({ open, onClose, categoryId }) => {
   };
 
   return (
-    <MDDialogBox
+    <ConfirmDialog
       open={open}
       onClose={onClose}
-      title={
-        <Box display="flex" alignItems="center" >
-          <WarningIcon color="error" />
-          <Typography variant="h6" fontWeight="bold">
-            Confirm Deletion
-          </Typography>
-        </Box>
-      }
-      actions={
-        <>
-          
-          <MDButton
-            onClick={handleDelete}
-            
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={22} color="inherit" /> : "Delete"}
-          </MDButton>
-        </>
-      }
-    >
-      <Typography>Are you sure you want to delete this category?</Typography>
-    </MDDialogBox>
+      onConfirm={handleDelete}
+      title="Confirm Deletion"
+      message="Are you sure you want to delete this category?"
+      confirmLabel={loading ? "Deleting..." : "Delete"}
+    />
   );
 };
 

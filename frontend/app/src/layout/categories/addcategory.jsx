@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewCategory, resetCategoryState } from "../../Slice/categorySlice";
-import MDDialogBox from "../../custom/MDdailogbox";
+import MDDialogBox from "../../custom/MDdialogbox";
 import MDButton from "../../custom/MDbutton";
 const AddCategory = ({ open, onClose, onSuccess }) => {
   const dispatch = useDispatch();

@@ -11,7 +11,7 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUser } from '../../Slice/userSlice';
-import MDDialogBox from '../../custom/MDdailogbox';
+import MDDialogBox from '../../custom/MDdialogbox';
 import MDButton from '../../custom/MDbutton';
 
 // ✅ Validation schema

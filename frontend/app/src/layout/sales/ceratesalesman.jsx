@@ -3,7 +3,7 @@ import { Button, TextField, Grid, Typography, CircularProgress } from '@mui/mate
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
-import MDDialogBox from '../../custom/MDdailogbox';
+import MDDialogBox from '../../custom/MDdialogbox';
 import MDButton from '../../custom/MDbutton';
 const CreateSalesman = ({ open, onClose, onSubmit, loading = false, error = null }) => {
   const validationSchema = Yup.object({
