@@ -12,7 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteWholesalerDialog from './deletewholesaler';
 import EditWholesalerDialog from './editwholesaler';
-import CreateWholesalerDialog from './cerateWholesaler';
+import CreateWholesalerDialog from './ceratewholesaler';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllUsers, createUser } from '../../Slice/userSlice';
 import MDDataGrid from '../../custom/MDdatagrid';
@@ -85,7 +85,7 @@ const Wholesalerview = () => {
         name: wholesalerData.name,
         businessName: wholesalerData.businessName,
         gstNumber: wholesalerData.gstNumber,
-        adharNumber: wholesalerData.aadharNumber,
+        adharNumber: wholesalerData.adharNumber,
         phoneNumber: wholesalerData.phoneNumber,
         email: `${wholesalerData.phoneNumber}@example.com`,
         password: 'defaultPassword123!',
@@ -257,12 +257,13 @@ const Wholesalerview = () => {
       />
 
       {/* Delete Dialog */}
-      <DeleteWholesalerDialog
-        open={deleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-        wholesalerId={selectedWholesalerId}
-        onSuccess={handleDeleteSuccess}
-      />
+    
+<DeleteWholesalerDialog
+  open={deleteDialogOpen}
+  onClose={handleCloseDeleteDialog}
+  wholesalerId={selectedWholesalerId}
+  onDeleteSuccess={handleDeleteSuccess}  // ✅ correct prop name
+/>
 
       {/* Snackbar */}
       <Snackbar

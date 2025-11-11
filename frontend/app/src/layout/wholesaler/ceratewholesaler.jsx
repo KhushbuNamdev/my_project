@@ -6,12 +6,12 @@ import PropTypes from 'prop-types';
 import MDDialogBox from '../../custom/MDdailogbox';
 import MDButton from '../../custom/MDbutton';
 
-const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = null }) => {
+const CreateWholesaler = ({ open, onClose, onCreate, loading = false, error = null }) => {
   const validationSchema = Yup.object({
     name: Yup.string().required('Name is required'),
     businessName: Yup.string().required('Business name is required'),
     gstNumber: Yup.string().required('GST number is required'),
-    aadharNumber: Yup.string()
+    adharNumber: Yup.string()
       .matches(/^[0-9]{12}$/, 'Aadhar number must be 12 digits')
       .required('Aadhar number is required'),
     phoneNumber: Yup.string()
@@ -31,7 +31,7 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
       name: '',
       businessName: '',
       gstNumber: '',
-      aadharNumber: '',
+      adharNumber: '',
       phoneNumber: '',
       street: '',
       city: '',
@@ -48,7 +48,7 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
           name: values.name,
           businessName: values.businessName,
           gstNumber: values.gstNumber,
-          aadharNumber: values.aadharNumber,
+          adharNumber: values.adharNumber,
           phoneNumber: values.phoneNumber,
           role: 'wholesaler',
           address: {
@@ -59,7 +59,7 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
             country: values.country,
           },
         };
-        await onSubmit(formattedValues);
+        await onCreate(formattedValues);
         resetForm();
       } catch (err) {
         console.error('Error submitting form:', err);
@@ -148,14 +148,14 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
         <Grid size = {{xs:12 , md:6}}>
             <TextField
               fullWidth
-              id="aadharNumber"
-              name="aadharNumber"
+              id="adharNumber"
+              name="adharNumber"
               label="Aadhar Number"
-              value={formik.values.aadharNumber}
+              value={formik.values.adharNumber}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.touched.aadharNumber && Boolean(formik.errors.aadharNumber)}
-              helperText={formik.touched.aadharNumber && formik.errors.aadharNumber}
+              error={formik.touched.adharNumber && Boolean(formik.errors.adharNumber)}
+              helperText={formik.touched.adharNumber && formik.errors.adharNumber}
             
             />
           </Grid>
@@ -270,7 +270,7 @@ const CreateWholesaler = ({ open, onClose, onSubmit, loading = false, error = nu
 CreateWholesaler.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
+  onCreate: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   error: PropTypes.string,
 };

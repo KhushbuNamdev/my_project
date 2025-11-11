@@ -15,26 +15,26 @@ const DeleteWholesalerDialog = ({ open, onClose, wholesalerId, onDeleteSuccess }
   const dispatch = useDispatch();
   const [isDeleting, setIsDeleting] = React.useState(false);
 
-  const handleDelete = async (e) => {
-    e.preventDefault();
-    try {
-      setIsDeleting(true);
-      await dispatch(deleteUser(wholesalerId)).unwrap();
+const handleDelete = async (e) => {
+  e.preventDefault();
+  try {
+    setIsDeleting(true);
+    await dispatch(deleteUser(wholesalerId)).unwrap();
 
-      // ✅ Refresh wholesaler list
-      await dispatch(getAllUsers());
+    // ✅ Close immediately after delete
+    onClose();
 
-      // ✅ Notify parent
-      onDeleteSuccess();
+    // ✅ Notify parent (snackbar + refresh)
+    onDeleteSuccess();
 
-      // ✅ Close dialog
-      onClose();
-    } catch (error) {
-      console.error('Error deleting wholesaler:', error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+    // Refresh wholesaler list
+    await dispatch(getAllUsers());
+  } catch (error) {
+    console.error('Error deleting wholesaler:', error);
+  } finally {
+    setIsDeleting(false);
+  }
+};
 
   return (
     <MDDialogBox

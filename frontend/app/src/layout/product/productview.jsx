@@ -112,26 +112,33 @@ const ProductView = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deleteDialog.product || !deleteDialog.product._id) return;
-    try {
-      const productId = deleteDialog.product._id;
-      await dispatch(removeProduct(productId)).unwrap();
-      setProducts((prev) => prev.filter((p) => p._id !== productId));
-      setSnackbar({
-        open: true,
-        message: "Product deleted successfully!",
-        severity: "success",
-      });
-      setDeleteDialog({ open: false, product: null });
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Failed to delete product",
-        severity: "error",
-      });
-      setDeleteDialog({ open: false, product: null });
-    }
-  };
+  if (!deleteDialog.product || !deleteDialog.product._id) return;
+
+  // 🔹 Immediately close the dialog before async work
+  const productId = deleteDialog.product._id;
+  setDeleteDialog({ open: false, product: null });
+
+  try {
+    await dispatch(removeProduct(productId)).unwrap();
+
+    // Update UI instantly
+    setProducts((prev) => prev.filter((p) => p._id !== productId));
+
+    // ✅ Refresh snackbar
+    setSnackbar({
+      open: true,
+      message: "Product deleted successfully!",
+      severity: "success",
+    });
+  } catch (error) {
+    setSnackbar({
+      open: true,
+      message: "Failed to delete product",
+      severity: "error",
+    });
+  }
+};
+
 
   const handleDeleteClose = () => {
     setDeleteDialog({ open: false, product: null });

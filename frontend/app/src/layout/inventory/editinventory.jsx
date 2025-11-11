@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button,
-  TextField,
-  Box,
-  CircularProgress,
-} from "@mui/material";
+import { Box, TextField, Button } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { updateInventoryItem } from "../../Slice/inventorySlice";
+import MDDialogBox from "../../custom/MDdailogbox";
 
 const EditInventory = ({ open, onClose, item, onSuccess }) => {
   const dispatch = useDispatch();
@@ -18,7 +10,6 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
     quantity: "",
     usedQuantity: "",
   });
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -34,84 +25,91 @@ const EditInventory = ({ open, onClose, item, onSuccess }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
- 
-const handleSubmit = async () => {
+ const handleSubmit = async () => {
   if (!item?._id) return;
-  setLoading(true);
-  try {
-    const updateData = {
-      quantity: Number(formData.quantity),
-      usedQuantity: Number(formData.usedQuantity),
-    };
 
-    const updatedResponse = await dispatch(
-      updateInventoryItem({ id: item._id, updateData })
+  const updatedItemTemp = {
+    ...item,
+    quantity: Number(formData.quantity),
+    usedQuantity: Number(formData.usedQuantity),
+    availableQuantity:
+      Number(formData.quantity) - Number(formData.usedQuantity),
+  };
+
+  try {
+    // ✅ Call backend
+    await dispatch(
+      updateInventoryItem({
+        id: item._id,
+        updateData: {
+          quantity: Number(formData.quantity),
+          usedQuantity: Number(formData.usedQuantity),
+        },
+      })
     ).unwrap();
 
-    const updatedItem = {
-      ...item,
-      ...updateData,
-      availableQuantity:
-        (updateData.quantity || item.quantity) -
-        (updateData.usedQuantity || item.usedQuantity),
-    };
+    // ✅ Close dialog *immediately*
+    onClose();
 
-    // ✅ directly call parent success (parent will close dialog)
-    if (onSuccess) onSuccess(updatedItem);
+    // ✅ Small delay before calling onSuccess (prevents re-render flicker)
+    setTimeout(() => {
+      if (onSuccess) onSuccess(updatedItemTemp);
+    }, 150);
   } catch (error) {
     console.error("Failed to update inventory:", error);
-  } finally {
-    setLoading(false);
   }
 };
-
 
 
   if (!item) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Edit Inventory</DialogTitle>
-      <DialogContent>
-        <Box display="flex" flexDirection="column" gap={2} mt={1}>
-          <TextField
-            label="Product Name"
-            value={item.productId?.name || "Unknown Product"}
-            fullWidth
-            disabled
-          />
-          <TextField
-            label="Total Quantity"
-            name="quantity"
-            type="number"
-            value={formData.quantity}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Used Quantity"
-            name="usedQuantity"
-            type="number"
-            value={formData.usedQuantity}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="inherit" disabled={loading}>
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          color="primary"
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} /> : "Update"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <MDDialogBox
+      open={open}
+      onClose={onClose}
+      title="Edit Inventory"
+      maxWidth="xs"
+      fullWidth
+      actions={
+        <>
+          <Button onClick={onClose} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            color="primary"
+          >
+            Update
+          </Button>
+        </>
+      }
+    >
+      <Box display="flex" flexDirection="column" gap={2} mt={1}>
+        <TextField
+          label="Product Name"
+          value={item.productId?.name || "Unknown Product"}
+          fullWidth
+          disabled
+        />
+        <TextField
+          label="Total Quantity"
+          name="quantity"
+          type="number"
+          value={formData.quantity}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Used Quantity"
+          name="usedQuantity"
+          type="number"
+          value={formData.usedQuantity}
+          onChange={handleChange}
+          fullWidth
+        />
+      </Box>
+    </MDDialogBox>
   );
 };
 
