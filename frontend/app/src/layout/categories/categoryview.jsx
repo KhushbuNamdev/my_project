@@ -106,7 +106,7 @@ const handleDeleteClick = (category) => {
         <Box p={3}>
       <Box
         sx={{
-          mb: 3,
+          mb: 2,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",

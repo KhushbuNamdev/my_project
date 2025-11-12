@@ -142,7 +142,7 @@ const Salesmanview = () => {
             placeholder="Search salespeople..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ width: 300 }}
+             minHeight={400} // ✅ enforce table min height
           />
           <MDButton
             variant="contained"

@@ -248,18 +248,20 @@ const handleUpdateSuccess = async () => {
         />
       </Box>
 
-      <Paper elevation={0} sx={{ height: 500, width: "100%", p: 1 }}>
-        <MDDataGrid
+ 
+
+<MDDataGrid
   rows={displayedInventory}
   columns={columns}
   getRowId={(row) => row._id}
   pageSize={10}
   rowsPerPageOptions={[5, 10, 20]}
   disableSelectionOnClick
-  loading={loading || tableLoading} // ✅ show loading when table fetches
-/>
-      </Paper>
+  loading={loading || tableLoading}
 
+/>
+
+  
       {/* ✅ Delete Confirmation Dialog */}
       <InventoryDelete
         open={deleteDialogOpen}

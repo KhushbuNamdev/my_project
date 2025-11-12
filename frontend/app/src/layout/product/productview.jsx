@@ -305,7 +305,7 @@ const ProductView = () => {
           placeholder="Search products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          sx={{ width: "300px" }}
+          minHeight={400} // ✅ enforce table min height
         />
         <MDButton onClick={() => setOpenAddDialog(true)}>Add Product</MDButton>
       </Box>
