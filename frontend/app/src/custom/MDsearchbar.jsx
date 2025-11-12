@@ -16,7 +16,7 @@ const MDSearchBar = ({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        background: '#4285F4',
+        background: '#000000ff',
         borderRadius: '12px',
         p: 0.8,
         boxShadow: '0px 2px 6px rgba(0,0,0,0.15)',

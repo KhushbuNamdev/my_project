@@ -68,18 +68,21 @@ const DashboardLayout = ({ onLogout }) => {
       <AppBar
         position="fixed" 
         sx={{
-          
-           width: { 
-            xs: 'calc(100% - 48px)',
-            sm: `calc(100% - ${collapsed ? 116 : drawerWidth + 48}px)`
-          },
-          mr: '16px',
-          mt: '16px',
-        
+          height:"50px",  
+       
+width: { 
+  xs: 'calc(70% - 40px)',
+  sm: `calc(100% - ${collapsed ? 150 : drawerWidth + 75}px)`
+},
+
+          //mr: '11px',
+          mt: '49px',
+          ml:"10px",
+        mr:"40px",
           borderRadius: '16px',
-          bgcolor: 'rgba(255, 255, 255, 0.98)',
+
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.5)',
+          //border: '1px solid rgba(255, 255, 255, 0.5)',
           color: 'text.primary',
           boxShadow: `
             0 4px 20px 0 rgba(0, 0, 0, 0.1),
@@ -103,23 +106,28 @@ const DashboardLayout = ({ onLogout }) => {
         }}
       >
         <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <Box >
+          
             <IconButton
               color="inherit"
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: 'none' } }}
+              sx={{ mr: 1, display: { sm: 'none' } }}
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 ,pb:2,  color:"#fafafa"}}>
               {currentTitle}
             </Typography>
           </Box>
 
           {/* Avatar dropdown */}
-          <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+          <IconButton onClick={handleMenuOpen} sx={{ pb:3 ,
+       
+ml:"90%",
+position:"fixed"
+          }}>
             <Avatar alt="User" />
           </IconButton>
           <Menu
@@ -179,7 +187,7 @@ const DashboardLayout = ({ onLogout }) => {
             '& .MuiDrawer-paper': {
               position: 'fixed',
               top: '16px',
-              left: '16px',
+              left: '11px',
               width: collapsed ? 80 : drawerWidth,
               height: 'calc(100vh - 32px)',
               transition: (theme) =>
@@ -210,12 +218,14 @@ const DashboardLayout = ({ onLogout }) => {
         sx={{
           flexGrow: 1,
           p: 0,
-          
-         width: { 
-            xs: 'calc(100% - 32px)',
-            sm: `calc(100% - ${collapsed ? 104 : drawerWidth + 32}px)`
-          },
-          ml:"15px",
+          background:"rgba(0, 217, 255, 0.8)",
+        width: {
+      xs: 'calc(100% - 40px)',
+      sm: collapsed
+        ? 'calc(100% - 186px)' // 116 (collapsed width) + 70 (extra margin)
+        : `calc(100% - ${drawerWidth + 70}px)`, // 240 + 70
+    },
+          ml:"1px",
           pl: { xs: 0, sm: '16px' },
           mt: '100px',
           minHeight: 'calc(100vh - 116px)',

@@ -52,7 +52,8 @@ const Sidebar = ({ onLogout, collapsed, toggleSidebar }) => {
     borderRadius: '16px',
     padding: theme.spacing(2, 1.5, 2, 2),
 
-  background:"#FFFFFF",
+ background:"#FFFFFF",
+ //background:"rgba(5, 5, 5, 0.34)",
     backdropFilter: 'blur(20px)',
     border: '1px solid rgba(255, 255, 255, 0.4)',
     boxShadow: `
@@ -118,7 +119,7 @@ const Sidebar = ({ onLogout, collapsed, toggleSidebar }) => {
                 backdropFilter: 'blur(5px)',
                 boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
                 '&:hover': {
-                  background: 'rgba(254, 202, 202, 0.4)',
+                  background: '#4285F4',
                   transform: 'translateY(-1px)',
                   boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
                 },
@@ -197,9 +198,9 @@ const Sidebar = ({ onLogout, collapsed, toggleSidebar }) => {
         <Divider sx={{ mb: 1 }} />
         <ListItemButton
           onClick={onLogout}
-          sx={{ '&:hover': { bgcolor: '#fde4e4' } }}
+          sx={{ '&:hover': { bgcolor: '#4285F4' } }}
         >
-          <ListItemIcon sx={{ color: 'error.main' }}>
+          <ListItemIcon sx={{  }}>
             <LogoutIcon />
           </ListItemIcon>
           <ListItemText primary="Logout" />

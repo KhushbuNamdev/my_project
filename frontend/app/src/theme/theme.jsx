@@ -1,34 +1,31 @@
+
+
 import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#fecaca', // Soft red
-      light: '#fee2e2', // Lighter red
-      dark: '#fca5a5', // Darker red
-      contrastText: '#1F2937', // Dark gray for text
+      main: '#4285F4', // Blue
+      light: '#6EA8FF', // Lighter blue
+      dark: '#3367D6', // Darker blue
+      contrastText: '#FFFFFF', // White text
     },
     secondary: {
-      main: '#fee2ea', // Soft pink
-      light: '#fef2f2', // Very light pink
-      dark: '#fbcfe8', // Darker pink
+      main: '#E3F2FD', // Very light blue for highlights
+      light: '#F1F8FF',
+      dark: '#90CAF9',
       contrastText: '#1F2937',
     },
-    // background: {
-    //   default: '#fef2f2', // Very light pink/white
-    //   paper: 'rgba(255, 255, 255, 0.8)', // Semi-transparent white
-    // },
-
-
-     background:{
-
-     default:"#FFFFFF"
-     },
+    background: {
+      default: '#FFFFFF', // White background
+      paper: '#FFFFFF',
+    },
     text: {
       primary: '#1F2937', // Dark gray
       secondary: '#4B5563', // Medium gray
     },
   },
+
   components: {
     MuiCard: {
       styleOverrides: {
@@ -44,25 +41,28 @@ const theme = createTheme({
             background: 'rgba(255, 255, 255, 0.7)',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.8)',
-            boxShadow: '0 4px 30px rgba(254, 202, 202, 0.2)',
+            boxShadow: '0 4px 30px rgba(66, 133, 244, 0.15)', // subtle blue shadow
             '&:hover': {
               transform: 'translateY(-5px)',
-              boxShadow: '0 10px 25px rgba(254, 202, 202, 0.3)',
+              boxShadow: '0 10px 25px rgba(66, 133, 244, 0.25)',
             },
           },
         },
       ],
     },
+
     MuiAppBar: {
       styleOverrides: {
         root: {
-          background: 'rgba(255, 255, 255, 0.98) !important',
+          background: '#4285F4', // Blue
+          color: '#FFFFFF',
           backdropFilter: 'blur(10px)',
-          boxShadow: '0 4px 30px hsla(0, 96%, 89%, 0.20)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 4px 30px rgba(66, 133, 244, 0.2)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
         },
       },
     },
+
     MuiButton: {
       styleOverrides: {
         root: {
@@ -72,24 +72,25 @@ const theme = createTheme({
           padding: '8px 20px',
         },
         contained: {
-          background: 'linear-gradient(45deg, #fecaca 0%, #fee2ea 100%)',
-          color: '#1F2937',
-          // '&:hover': {
-          //   background: 'linear-gradient(45deg, #fecaca 0%, #fbcfe8 100%)',
-          //   boxShadow: '0 4px 15px rgba(254, 202, 202, 0.4)',
-          // },
+          background: 'linear-gradient(45deg, #4285F4 0%, #6EA8FF 100%)',
+          color: '#FFFFFF',
+          '&:hover': {
+            background: 'linear-gradient(45deg, #3367D6 0%, #5B9CFF 100%)',
+            boxShadow: '0 4px 15px rgba(66, 133, 244, 0.4)',
+          },
         },
         outlined: {
-          borderColor: '#fecaca',
+          borderColor: '#4285F4',
           color: '#1F2937',
           '&:hover': {
-            borderColor: '#fecaca',
-            background: 'rgba(254, 202, 202, 0.1)',
+            borderColor: '#3367D6',
+            background: 'rgba(66, 133, 244, 0.1)',
           },
         },
       },
     },
   },
+
   typography: {
     fontFamily: [
       'Inter',
@@ -104,30 +105,12 @@ const theme = createTheme({
       '"Segoe UI Emoji"',
       '"Segoe UI Symbol"',
     ].join(','),
-    h1: {
-      fontWeight: 700,
-      color: '#1F2937',
-    },
-    h2: {
-      fontWeight: 600,
-      color: '#1F2937',
-    },
-    h3: {
-      fontWeight: 600,
-      color: '#1F2937',
-    },
-    h4: {
-      fontWeight: 600,
-      color: '#1F2937',
-    },
-    h5: {
-      fontWeight: 600,
-      color: '#1F2937',
-    },
-    h6: {
-      fontWeight: 600,
-      color: '#1F2937',
-    },
+    h1: { fontWeight: 700, color: '#1F2937' },
+    h2: { fontWeight: 600, color: '#1F2937' },
+    h3: { fontWeight: 600, color: '#1F2937' },
+    h4: { fontWeight: 600, color: '#1F2937' },
+    h5: { fontWeight: 600, color: '#1F2937' },
+    h6: { fontWeight: 600, color: '#1F2937' },
   },
 });
 
