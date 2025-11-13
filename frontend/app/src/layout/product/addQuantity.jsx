@@ -6,10 +6,12 @@ import {
   Alert,
   IconButton,
   Box,
-  Grid,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { createNewInventory, fetchAllInventory } from "../../Slice/inventorySlice";
+import {
+  createNewInventory,
+  fetchAllInventory,
+} from "../../Slice/inventorySlice";
 import { fetchAllProducts } from "../../Slice/productSlice";
 import MDDialogBox from "../../custom/MDdialogbox";
 import MDButton from "../../custom/MDbutton";
@@ -19,9 +21,9 @@ import AddIcon from "@mui/icons-material/Add";
 const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
   const dispatch = useDispatch();
 
-  // ✅ Store multiple entries for serial number, quantity, and price
-  const [entries, setEntries] = useState([
-    { serialNumber: "", quantity: "1", price: "" },
+  // Inventory items (no default quantity)
+  const [inventoryItems, setInventoryItems] = useState([
+    { serialNumber: "", quantity: "", price: "" },
   ]);
 
   const [snackbar, setSnackbar] = useState({
@@ -30,30 +32,42 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
     severity: "success",
   });
 
-  // ✅ Handle input change for each row
-  const handleChange = (index, field, value) => {
-    const updatedEntries = [...entries];
-    updatedEntries[index][field] = value;
-    setEntries(updatedEntries);
+  // Handle input change for each item
+  const handleItemChange = (index, field, value) => {
+    const updatedItems = [...inventoryItems];
+
+    if (field === "quantity") {
+      // Allow only positive integers or empty
+      if (value !== "" && (!/^[0-9]+$/.test(value) || parseInt(value, 10) < 1)) {
+        return;
+      }
+    } else if (field === "price") {
+      // Allow empty or valid number up to 2 decimals
+      if (value !== "" && !/^\d*\.?\d{0,2}$/.test(value)) {
+        return;
+      }
+    }
+
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    setInventoryItems(updatedItems);
   };
 
-  // ✅ Reset form to initial state with defaults
-  const handleReset = () => {
-    setEntries([{ serialNumber: "", quantity: "1", price: "" }]);
+  // Add new item
+  const handleAddItem = () => {
+    setInventoryItems([
+      ...inventoryItems,
+      { serialNumber: "", quantity: "", price: "" },
+    ]);
   };
 
-  // ✅ Add new row with default values
-  const handleAddRow = () => {
-    setEntries([...entries, { serialNumber: "", quantity: "1", price: "" }]);
+  // Remove specific item
+  const handleRemoveItem = (index) => {
+    if (inventoryItems.length <= 1) return;
+    const updatedItems = inventoryItems.filter((_, i) => i !== index);
+    setInventoryItems(updatedItems);
   };
 
-  // ✅ Remove specific row
-  const handleRemoveRow = (index) => {
-    const updatedEntries = entries.filter((_, i) => i !== index);
-    setEntries(updatedEntries);
-  };
-
-  // ✅ Submit all entries
+  // Submit all inventory items
   const handleSubmit = async () => {
     if (!product) {
       setSnackbar({
@@ -64,41 +78,38 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
       return;
     }
 
-    // Validation: check for any empty or invalid entries
-    for (const entry of entries) {
-      if (
-        !entry.serialNumber ||
-        !entry.quantity ||
-        entry.quantity === "" ||
-        entry.price === "" ||
-        isNaN(entry.quantity) ||
-        entry.quantity <= 0 ||
-        isNaN(entry.price) ||
-        entry.price < 0
-      ) {
-        setSnackbar({
-          open: true,
-          message: "Please fill valid Serial Number, Quantity & Price for all rows",
-          severity: "error",
-        });
-        return;
-      }
+    const hasInvalidItems = inventoryItems.some(
+      (item) =>
+        !item.serialNumber ||
+        !item.quantity ||
+        isNaN(parseFloat(item.quantity)) ||
+        parseFloat(item.quantity) < 1 ||
+        !item.price ||
+        isNaN(parseFloat(item.price)) ||
+        parseFloat(item.price) < 0
+    );
+
+    if (hasInvalidItems) {
+      setSnackbar({
+        open: true,
+        message:
+          "Please fill valid Serial Number, Quantity & Price for all items",
+        severity: "error",
+      });
+      return;
     }
 
     try {
-      // ✅ Dispatch inventory creation for each entry
-      for (const entry of entries) {
-        await dispatch(
-          createNewInventory({
-            productId: product._id,
-            serialNumbers: [entry.serialNumber],
-            quantity: parseInt(entry.quantity, 10) || 1, // Ensure we always have a quantity
-            price: parseFloat(entry.price) || 0,
-          })
-        ).unwrap();
-      }
+      const inventoryData = {
+        productId: product._id,
+        items: inventoryItems.map((item) => ({
+          serialNumber: item.serialNumber,
+          quantity: Number(item.quantity),
+          price: parseFloat(item.price),
+        })),
+      };
 
-      // ✅ Refresh products and inventory in parallel
+      await dispatch(createNewInventory(inventoryData)).unwrap();
       await Promise.all([
         dispatch(fetchAllProducts()),
         dispatch(fetchAllInventory()),
@@ -110,13 +121,15 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
         severity: "success",
       });
 
-      setEntries([{ serialNumber: "", quantity: "1", price: "" }]);
+      // Reset to blank single entry
+      setInventoryItems([{ serialNumber: "", quantity: "", price: "" }]);
       if (onSuccess) onSuccess();
       onClose();
-    } catch {
+    } catch (error) {
+      console.error("Error adding inventory:", error);
       setSnackbar({
         open: true,
-        message: "Failed to add inventory",
+        message: error.message || "Failed to add inventory",
         severity: "error",
       });
     }
@@ -134,8 +147,8 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
           </>
         }
       >
-        {/* ✅ Dynamic form fields */}
-        {entries.map((entry, index) => (
+        {/* Inventory Items */}
+        {inventoryItems.map((item, index) => (
           <Box
             key={index}
             sx={{
@@ -148,79 +161,80 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
             <TextField
               label="Serial Number"
               fullWidth
-              value={entry.serialNumber}
-              onChange={(e) => handleChange(index, "serialNumber", e.target.value)}
+              value={item.serialNumber}
+              onChange={(e) =>
+                handleItemChange(index, "serialNumber", e.target.value)
+              }
+              required
             />
             <TextField
               label="Quantity"
               type="number"
               fullWidth
-              value={entry.quantity}
-              onChange={(e) => {
-                const value = e.target.value === "" ? "" : Math.max(1, parseInt(e.target.value) || 1).toString();
-                handleChange(index, "quantity", value);
-              }}
+              value={item.quantity}
+              onChange={(e) =>
+                handleItemChange(index, "quantity", e.target.value)
+              }
               inputProps={{ min: 1, step: 1 }}
+              required
             />
             <TextField
               label="Price"
               type="number"
               fullWidth
-              value={entry.price}
-              onChange={(e) => {
-                // Allow empty string or valid number with up to 2 decimal places
-                const value = e.target.value;
-                if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
-                  handleChange(index, "price", value);
-                }
-              }}
+              value={item.price}
+              onChange={(e) =>
+                handleItemChange(index, "price", e.target.value)
+              }
               onBlur={(e) => {
-                // Format to 2 decimal places when input loses focus
                 const value = e.target.value;
-                if (value && !isNaN(value) && value.trim() !== '') {
-                  handleChange(index, "price", parseFloat(value).toFixed(2));
+                if (value && !isNaN(value) && value.trim() !== "") {
+                  handleItemChange(
+                    index,
+                    "price",
+                    parseFloat(value).toFixed(2)
+                  );
                 }
               }}
-              inputProps={{ 
-                min: 0, 
-                step: "0.01" 
+          slotProps={{
+                min: 0,
+                step: "0.01",
               }}
+              required
             />
 
-            {/* ✅ Delete Row Button */}
+            {/* Delete Item */}
             <IconButton
               color="error"
-              onClick={() => handleRemoveRow(index)}
-              disabled={entries.length === 1}
+              onClick={() => handleRemoveItem(index)}
+              disabled={inventoryItems.length <= 1}
             >
               <DeleteIcon />
             </IconButton>
           </Box>
         ))}
 
-        {/* ✅ Add More Button */}
-        <Button
-          variant="outlined"
-          startIcon={<AddIcon />}
-          onClick={handleAddRow}
-          sx={{ mt: 1 }}
-        >
-          Add More
-        </Button>
+        {/* Add More */}
+        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={handleAddItem}
+            fullWidth
+          >
+            Add Another Item
+          </Button>
+        </Box>
       </MDDialogBox>
 
-      {/* ✅ Snackbar */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
+        <Alert severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
           {snackbar.message}
         </Alert>
       </Snackbar>

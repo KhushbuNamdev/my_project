@@ -510,7 +510,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
               fullWidth
               error={formik.touched.gstPercentage && Boolean(formik.errors.gstPercentage)}
               helperText={formik.touched.gstPercentage && formik.errors.gstPercentage}
-              inputProps={{ min: 0, max: 100, step: 0.01 }}
+              slotProps={{ min: 0, max: 100, step: 0.01 }}
             />
 
             <FormControl fullWidth sx={{ mb: 2 }}>
@@ -550,7 +550,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                     onBlur={formik.handleBlur}
                     fullWidth
                     size="small"
-                    inputProps={{ min: 0, step: 0.1 }}
+                    slotProps={{ min: 0, step: 0.1 }}
                   />
                 </Grid>
                 <Grid item xs={4}>
@@ -563,10 +563,10 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                     onBlur={formik.handleBlur}
                     fullWidth
                     size="small"
-                    inputProps={{ min: 0, step: 0.1 }}
+                    slotProps={{ min: 0, step: 0.1 }}
                   />
                 </Grid>
-                <Grid item xs={4}>
+             <Grid size={{xs:4}}>
                   <TextField
                     label="Height"
                     name="specifications.dimensions.height"
@@ -576,7 +576,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                     onBlur={formik.handleBlur}
                     fullWidth
                     size="small"
-                    inputProps={{ min: 0, step: 0.1 }}
+                    slotProps={{ min: 0, step: 0.1 }}
                   />
                 </Grid>
               </Grid>
@@ -593,10 +593,10 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                     onBlur={formik.handleBlur}
                     fullWidth
                     size="small"
-                    inputProps={{ min: 0, step: 0.1 }}
+                 slotProps={{ min: 0, step: 0.1 }}
                   />
                 </Grid>
-                <Grid item xs={3}>
+             <Grid size={{xs:3}}>
                   <FormControl fullWidth size="small">
                     <Select
                       name="specifications.weight.unit"
@@ -654,7 +654,7 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                         alignItems="center"
                         sx={{ mb: 2 }}
                       >
-                        <Grid item xs={11}>
+                        <Grid size={{xs:11}}>
                           <TextField
                             label={`Feature ${index + 1}`}
                             value={feature}
@@ -674,11 +674,11 @@ const AddProduct = ({ open, onClose, onSuccess }) => {
                             }
                           />
                         </Grid>
-                        <Grid item xs={1}>
+                        <Grid size={{xs:1}}>
                           <IconButton
                             onClick={() => arrayHelpers.remove(index)}
                             disabled={formik.values.features.length <= 1}
-                            color="error"
+                         
                           >
                             <DeleteIcon />
                           </IconButton>

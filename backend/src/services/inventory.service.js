@@ -17,7 +17,7 @@ const createInventory = async (inventoryData) => {
   session.startTransaction();
 
   try {
-    const { serialNumbers, price, ...restData } = inventoryData;
+    const { items, ...restData } = inventoryData;
 
     // Check if product exists and is not deleted
     const product = await Product.findOne({
@@ -29,16 +29,15 @@ const createInventory = async (inventoryData) => {
       throw new Error('Product not found or has been deleted');
     }
 
-    // Create an inventory record for each serial number
-    const inventoryPromises = serialNumbers.map(serialNumber => {
-      // For each serial number, create a separate inventory record
+    // Create inventory records for each item
+    const inventoryPromises = items.map(item => {
       const inventory = new Inventory({
         ...restData,
-        serialNumber,
-        price,
-        quantity: 1, // Each serial number represents one item
+        serialNumber: item.serialNumber,
+        price: item.price,
+        quantity: item.quantity,
         usedQuantity: 0, // Default to 0 used quantity for new items
-        availableQuantity: 1, // Each serial number has one available item
+        availableQuantity: item.quantity, // Available quantity equals total quantity for new items
         status: 'in_stock', // Default status for new items
         lastRestocked: new Date(),
         isActive: true

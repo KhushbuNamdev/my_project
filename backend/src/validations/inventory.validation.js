@@ -9,25 +9,33 @@ const serialNumberSchema = Joi.string().required().messages({
   'any.required': 'Serial number is required'
 });
 
-const createInventorySchema = Joi.object({
-  productId: Joi.string().required().messages({
-    'string.empty': 'Product ID is required',
-    'any.required': 'Product ID is required'
+const inventoryItemSchema = Joi.object({
+  serialNumber: Joi.string().required().messages({
+    'string.empty': 'Serial number is required',
+    'any.required': 'Serial number is required'
   }),
-  serialNumbers: Joi.array().items(serialNumberSchema).min(1).required().messages({
-    'array.base': 'Serial numbers must be an array',
-    'array.min': 'At least one serial number is required',
-    'any.required': 'Serial numbers are required'
-  }),
-  quantity: Joi.number().integer().min(1).default(1).messages({
+  quantity: Joi.number().integer().min(1).required().messages({
     'number.base': 'Quantity must be a number',
     'number.integer': 'Quantity must be an integer',
-    'number.min': 'Quantity must be at least 1'
+    'number.min': 'Quantity must be at least 1',
+    'any.required': 'Quantity is required'
   }),
   price: Joi.number().min(0).required().messages({
     'number.base': 'Price must be a number',
     'number.min': 'Price cannot be negative',
     'any.required': 'Price is required'
+  })
+});
+
+const createInventorySchema = Joi.object({
+  productId: Joi.string().required().messages({
+    'string.empty': 'Product ID is required',
+    'any.required': 'Product ID is required'
+  }),
+  items: Joi.array().items(inventoryItemSchema).min(1).required().messages({
+    'array.base': 'Items must be an array',
+    'array.min': 'At least one item is required',
+    'any.required': 'Items are required'
   }),
   usedQuantity: Joi.number().integer().min(0).default(0).messages({
     'number.base': 'Used quantity must be a number',
@@ -40,21 +48,19 @@ const createInventorySchema = Joi.object({
     'number.min': 'Low stock threshold must be at least 1'
   })
 }).custom((value, helpers) => {
-  if (value.serialNumbers && value.serialNumbers.length > 0) {
-    // Set default quantity to 1 if not provided
-    if (!value.quantity) {
-      value.quantity = 1;
-    }
+  // Calculate total quantity
+  const totalQuantity = value.items.reduce((sum, item) => sum + item.quantity, 0);
 
-    // Ensure we have at least one serial number
-    if (value.serialNumbers.length === 0) {
-      return helpers.message('At least one serial number is required');
-    }
+  // Check for duplicate serial numbers
+  const serialNumbers = value.items.map(item => item.serialNumber);
+  const uniqueSerials = new Set(serialNumbers);
+
+  if (serialNumbers.length !== uniqueSerials.size) {
+    return helpers.message('Duplicate serial numbers are not allowed');
   }
 
-  if (value.usedQuantity > value.quantity) {
-    return helpers.message('Used quantity cannot exceed total quantity');
-  }
+  // Store total quantity for use in the service
+  value.totalQuantity = totalQuantity;
 
   return value;
 }, 'Inventory Validation');
