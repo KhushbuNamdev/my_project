@@ -24,6 +24,11 @@ const inventoryItemSchema = Joi.object({
     'number.base': 'Price must be a number',
     'number.min': 'Price cannot be negative',
     'any.required': 'Price is required'
+  }),
+  discount: Joi.number().min(0).max(100).default(0).messages({
+    'number.base': 'Discount must be a number',
+    'number.min': 'Discount cannot be negative',
+    'number.max': 'Discount cannot exceed 100%'
   })
 });
 
@@ -46,6 +51,11 @@ const createInventorySchema = Joi.object({
     'number.base': 'Low stock threshold must be a number',
     'number.integer': 'Low stock threshold must be an integer',
     'number.min': 'Low stock threshold must be at least 1'
+  }),
+  discount: Joi.number().min(0).max(100).default(0).messages({
+    'number.base': 'Discount must be a number',
+    'number.min': 'Discount cannot be negative',
+    'number.max': 'Discount cannot exceed 100%'
   })
 }).custom((value, helpers) => {
   // Calculate total quantity

@@ -65,6 +65,12 @@ const inventorySchema = new Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    discount: {
+        type: Number,
+        min: [0, 'Discount cannot be negative'],
+        max: [100, 'Discount cannot exceed 100%'],
+        default: 0
     }
 }, {
     timestamps: true,

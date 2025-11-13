@@ -23,7 +23,7 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
 
   // Inventory items (no default quantity)
   const [inventoryItems, setInventoryItems] = useState([
-    { serialNumber: "", quantity: "", price: "" },
+    { serialNumber: "", quantity: "", price: "", discount: "" },
   ]);
 
   const [snackbar, setSnackbar] = useState({
@@ -56,7 +56,7 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
   const handleAddItem = () => {
     setInventoryItems([
       ...inventoryItems,
-      { serialNumber: "", quantity: "", price: "" },
+      { serialNumber: "", quantity: "", price: "", discount: "" },
     ]);
   };
 
@@ -86,7 +86,11 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
         parseFloat(item.quantity) < 1 ||
         !item.price ||
         isNaN(parseFloat(item.price)) ||
-        parseFloat(item.price) < 0
+        parseFloat(item.price) < 0 ||
+        (item.discount && 
+          (isNaN(parseFloat(item.discount)) || 
+           parseFloat(item.discount) < 0 || 
+           parseFloat(item.discount) > 100))
     );
 
     if (hasInvalidItems) {
@@ -156,11 +160,13 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
               alignItems: "center",
               gap: 2,
               mb: 2,
+              flexWrap: 'wrap'
             }}
           >
             <TextField
               label="Serial Number"
               fullWidth
+              sx={{ flex: 2 }}
               value={item.serialNumber}
               onChange={(e) =>
                 handleItemChange(index, "serialNumber", e.target.value)
@@ -170,18 +176,18 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
             <TextField
               label="Quantity"
               type="number"
-              fullWidth
+              sx={{ flex: 1 }}
               value={item.quantity}
               onChange={(e) =>
                 handleItemChange(index, "quantity", e.target.value)
               }
-              inputProps={{ min: 1, step: 1 }}
+              slotsProps={{ min: 1, step: 1 }}
               required
             />
             <TextField
               label="Price"
               type="number"
-              fullWidth
+              sx={{ flex: 1 }}
               value={item.price}
               onChange={(e) =>
                 handleItemChange(index, "price", e.target.value)
@@ -196,14 +202,51 @@ const AddQuantityDialog = ({ open, onClose, product, onSuccess }) => {
                   );
                 }
               }}
-          slotProps={{
-                min: 0,
-                step: "0.01",
+              slotProps={{
+                startAdornment: '₹',
               }}
+             
               required
             />
-
-            {/* Delete Item */}
+            <TextField
+              label="Discount %"
+              type="number"
+              sx={{ flex: 1 }}
+              value={item.discount}
+              onChange={(e) =>
+                handleItemChange(index, "discount", e.target.value)
+              }
+              onBlur={(e) => {
+                const value = e.target.value;
+                if (value && !isNaN(value) && value.trim() !== "") {
+                  const discount = parseFloat(value);
+                  if (discount >= 0 && discount <= 100) {
+                    handleItemChange(
+                      index,
+                      "discount",
+                      discount.toString()
+                    );
+                  }
+                }
+              }}
+              slotProps={{
+                min: 0,
+                max: 100,
+                step: 0.01
+              }}
+              // helperText={item.discount && parseFloat(item.discount) > 0 ? 
+              //   `Discounted Price: ₹${(item.price * (1 - (parseFloat(item.discount) / 100))).toFixed(2)}` : 
+              //   ''}
+            />
+            {inventoryItems.length > 1 && (
+              <IconButton 
+                onClick={() => handleRemoveItem(index)}
+                color="error"
+                sx={{ mt: 1 }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
             <IconButton
               color="error"
               onClick={() => handleRemoveItem(index)}
