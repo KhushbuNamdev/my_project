@@ -57,7 +57,53 @@ const createProductSchema = Joi.object({
       'number.min': 'GST percentage cannot be negative',
       'number.max': 'GST percentage cannot exceed 100%',
       'number.base': 'GST percentage must be a number'
-    })
+    }),
+  warranty: Joi.number().valid(6, 12, 18, 24).default(12)
+    .messages({
+      'number.base': 'Warranty must be a number',
+      'any.only': 'Warranty must be one of: 6, 12, 18, or 24 months'
+    }),
+  specifications: Joi.object({
+    dimensions: Joi.object({
+      length: Joi.number().min(0).default(0)
+        .messages({
+          'number.base': 'Length must be a number',
+          'number.min': 'Length cannot be negative'
+        }),
+      width: Joi.number().min(0).default(0)
+        .messages({
+          'number.base': 'Width must be a number',
+          'number.min': 'Width cannot be negative'
+        }),
+      height: Joi.number().min(0).default(0)
+        .messages({
+          'number.base': 'Height must be a number',
+          'number.min': 'Height cannot be negative'
+        })
+    }),
+    cca: Joi.number().min(0).default(0)
+      .messages({
+        'number.base': 'CCA must be a number',
+        'number.min': 'CCA cannot be negative'
+      }),
+    rc: Joi.number().min(0).default(0)
+      .messages({
+        'number.base': 'RC must be a number',
+        'number.min': 'RC cannot be negative'
+      }),
+    weight: Joi.object({
+      value: Joi.number().min(0).required()
+        .messages({
+          'number.base': 'Weight must be a number',
+          'number.min': 'Weight cannot be negative'
+        }),
+      unit: Joi.string().valid('kg', 'g', 'lb', 'oz').default('kg')
+        .messages({
+          'string.base': 'Unit must be a string',
+          'any.only': 'Unit must be one of: kg, g, lb, oz'
+        })
+    }).default({ value: 0, unit: 'kg' })
+  }).default({})
 });
 
 const updateProductSchema = Joi.object({
@@ -105,7 +151,53 @@ const updateProductSchema = Joi.object({
       'number.min': 'GST percentage cannot be negative',
       'number.max': 'GST percentage cannot exceed 100%',
       'number.base': 'GST percentage must be a number'
+    }),
+  warranty: Joi.number().valid(6, 12, 18, 24)
+    .messages({
+      'number.base': 'Warranty must be a number',
+      'any.only': 'Warranty must be one of: 6, 12, 18, or 24 months'
+    }),
+  specifications: Joi.object({
+    dimensions: Joi.object({
+      length: Joi.number().min(0)
+        .messages({
+          'number.base': 'Length must be a number',
+          'number.min': 'Length cannot be negative'
+        }),
+      width: Joi.number().min(0)
+        .messages({
+          'number.base': 'Width must be a number',
+          'number.min': 'Width cannot be negative'
+        }),
+      height: Joi.number().min(0)
+        .messages({
+          'number.base': 'Height must be a number',
+          'number.min': 'Height cannot be negative'
+        })
+    }),
+    cca: Joi.number().min(0)
+      .messages({
+        'number.base': 'CCA must be a number',
+        'number.min': 'CCA cannot be negative'
+      }),
+    rc: Joi.number().min(0)
+      .messages({
+        'number.base': 'RC must be a number',
+        'number.min': 'RC cannot be negative'
+      }),
+    weight: Joi.object({
+      value: Joi.number().min(0)
+        .messages({
+          'number.base': 'Weight value must be a number',
+          'number.min': 'Weight cannot be negative'
+        }),
+      unit: Joi.string().valid('kg', 'g', 'lb', 'oz')
+        .messages({
+          'string.base': 'Unit must be a string',
+          'any.only': 'Unit must be one of: kg, g, lb, oz'
+        })
     })
-}).min(1).message('At least one field is required for update');
+  }).min(1).message('At least one field is required for update')
+});
 
 export { createProductSchema, updateProductSchema };

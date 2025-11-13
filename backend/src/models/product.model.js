@@ -55,10 +55,70 @@ const productSchema = new Schema({
         min: [0, 'GST percentage cannot be negative'],
         max: [100, 'GST percentage cannot exceed 100%'],
         default: 0
+    },
+    warranty: {
+        type: Number,
+        enum: {
+            values: [6, 12, 18, 24],
+            message: 'Warranty must be one of: 6, 12, 18, or 24 months'
+        },
+        default: 12 // Added default value
+    },
+    specifications: {
+        type: Object,
+        default: {}
+    },
+    'specifications.dimensions': {
+        type: Object,
+        default: {}
+    },
+    'specifications.dimensions.length': {
+        type: Number,
+        min: [0, 'Length cannot be negative'],
+        default: 0
+    },
+    'specifications.dimensions.width': {
+        type: Number,
+        min: [0, 'Width cannot be negative'],
+        default: 0
+    },
+    'specifications.dimensions.height': {
+        type: Number,
+        min: [0, 'Height cannot be negative'],
+        default: 0
+    },
+    'specifications.cca': {
+        type: Number,
+        min: [0, 'CCA cannot be negative'],
+        default: 0
+    },
+    'specifications.rc': {
+        type: Number,
+        min: [0, 'RC cannot be negative'],
+        default: 0
+    },
+    'specifications.weight': {
+        type: Object,
+        default: { value: 0, unit: 'kg' }
+    },
+    'specifications.weight.value': {
+        type: Number,
+        min: [0, 'Weight cannot be negative'],
+        default: 0
+    },
+    'specifications.weight.unit': {
+        type: String,
+        enum: {
+            values: ['kg', 'g', 'lb', 'oz'],
+            message: 'Weight unit must be one of: kg, g, lb, oz'
+        },
+        default: 'kg'
     }
-}, {
+},
+
+ {
     timestamps: true,
-    toJSON: { virtuals: true },
+        toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
 
