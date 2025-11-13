@@ -229,7 +229,7 @@ position:"fixed"
           pl: { xs: 0, sm: '16px' },
           //mt: '100px',
           mt:"70px",
-          minHeight: 'calc(102vh - 118px)',
+          minHeight: 'calc(132vh - 152px)',
           transition: (theme) =>
             theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,

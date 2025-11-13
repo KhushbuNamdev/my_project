@@ -6,7 +6,7 @@ const MDDataGrid = ({
   rows,
   columns,
   pageSize = 5,
-  minHeight =500,
+  minHeight =515,
   loading = false,
   disableTopRadius = false, // 👈 new prop added
 }) => {
