@@ -12,11 +12,12 @@ const createInventory = async (req, res, next) => {
       });
     }
 
-    const inventory = await createInventoryService(req.body);
-    
+    const createdRecords = await createInventoryService(req.body);
+
     res.status(201).json({
       success: true,
-      data: inventory
+      message: `Successfully created ${createdRecords.length} inventory records`,
+      data: createdRecords
     });
   } catch (error) {
     next(error);

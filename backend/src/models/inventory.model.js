@@ -3,6 +3,17 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const inventorySchema = new Schema({
+    serialNumber: {
+        type: String,
+        required: [true, 'Serial number is required'],
+        trim: true,
+        index: true
+    },
+    price: {
+        type: Number,
+        required: [true, 'Price is required'],
+        min: [0, 'Price cannot be negative']
+    },
     productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',

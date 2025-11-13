@@ -8,18 +8,20 @@ import mongoose from 'mongoose';
  * @returns {Promise<Object>} Created inventory record
  */
 /**
- * Create a new inventory record
- * @param {Object} inventoryData - Inventory data
- * @returns {Promise<Object>} Created inventory record
+ * Create multiple inventory records, one for each serial number
+ * @param {Object} inventoryData - Inventory data including serialNumbers array
+ * @returns {Promise<Array>} Array of created inventory records
  */
 const createInventory = async (inventoryData) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    const { serialNumbers, price, ...restData } = inventoryData;
+
     // Check if product exists and is not deleted
     const product = await Product.findOne({
-      _id: inventoryData.productId,
+      _id: restData.productId,
       isDeleted: false
     }).session(session);
 
@@ -27,49 +29,64 @@ const createInventory = async (inventoryData) => {
       throw new Error('Product not found or has been deleted');
     }
 
-    // Calculate available quantity
-    const availableQuantity = (inventoryData.quantity || 0) - (inventoryData.usedQuantity || 0);
-
-    // Determine status based on available quantity
-    let status = 'out_of_stock';
-    if (availableQuantity > 0) {
-      status = availableQuantity <= (inventoryData.lowStockThreshold || 10) ? 'low_stock' : 'in_stock';
-    }
-
-    const inventory = new Inventory({
-      ...inventoryData,
-      availableQuantity,
-      status,
-      lastRestocked: new Date(),
-      isActive: true
+    // Create an inventory record for each serial number
+    const inventoryPromises = serialNumbers.map(serialNumber => {
+      // For each serial number, create a separate inventory record
+      const inventory = new Inventory({
+        ...restData,
+        serialNumber,
+        price,
+        quantity: 1, // Each serial number represents one item
+        usedQuantity: 0, // Default to 0 used quantity for new items
+        availableQuantity: 1, // Each serial number has one available item
+        status: 'in_stock', // Default status for new items
+        lastRestocked: new Date(),
+        isActive: true
+      });
+      return inventory.save({ session });
     });
 
-    await inventory.save({ session });
-
-    // Get the total stock for this product (including the newly created inventory)
+    // Execute all inserts in parallel
+    const inventoryRecords = await Promise.all(inventoryPromises);
     const productId = typeof inventoryData.productId === 'string'
       ? new mongoose.Types.ObjectId(inventoryData.productId)
       : inventoryData.productId;
 
-    const stockInfo = await Inventory.getProductStock(productId);
+    const [totalStock] = await Inventory.aggregate([
+      {
+        $match: {
+          productId: productId,
+          isActive: true
+        }
+      },
+      {
+        $group: {
+          _id: '$productId',
+          totalQuantity: { $sum: '$quantity' },
+          totalUsed: { $sum: '$usedQuantity' },
+          totalAvailable: { $sum: '$availableQuantity' }
+        }
+      }
+    ]).session(session);
+
+    // Update the product's stock information
+    await Product.findByIdAndUpdate(
+      productId,
+      {
+        $set: {
+          totalStock: totalStock?.totalQuantity || 0,
+          availableStock: totalStock?.totalAvailable || 0,
+          usedStock: totalStock?.totalUsed || 0,
+          lastStockUpdate: new Date()
+        }
+      },
+      { session, new: true }
+    );
 
     await session.commitTransaction();
+    await session.endSession();
 
-    // Populate product details when returning
-    const result = await Inventory.findById(inventory._id)
-      .populate('productId', 'name')
-      .lean();
-
-    // Add the total stock information to the response
-    return {
-      ...result,
-      productStock: {
-        totalQuantity: stockInfo.totalQuantity,
-        totalUsed: stockInfo.totalUsed,
-        available: stockInfo.available,
-        totalRecords: stockInfo.count
-      }
-    };
+    return inventoryRecords;
   } catch (error) {
     await session.abortTransaction();
     console.error('Error creating inventory:', error);

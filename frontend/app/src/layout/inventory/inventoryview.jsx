@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllInventory, deleteInventoryItem } from "../../Slice/inventorySlice";
@@ -134,18 +130,18 @@ const InventoryView = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // ✅ Process and map inventory data
+  // ✅ Process and map inventory data (Added serialNumber)
   const processedInventory = useMemo(() => {
     if (!Array.isArray(filteredItems)) return [];
     return filteredItems.map((item) => ({
       id: item._id,
       _id: item._id,
+      serialNumber: item.serialNumber || "N/A", // ✅ Added serial number
       productName: item.productId?.name || "Unknown Product",
       quantity: item.quantity || 0,
       usedQuantity: item.usedQuantity || 0,
       availableQuantity:
-        item.availableQuantity ??
-        (item.quantity || 0) - (item.usedQuantity || 0),
+        item.availableQuantity ?? (item.quantity || 0) - (item.usedQuantity || 0),
       createdAt: new Date(item.createdAt).toLocaleString(),
     }));
   }, [filteredItems]);
@@ -154,12 +150,16 @@ const InventoryView = () => {
   const displayedInventory = useMemo(() => {
     if (!searchTerm) return processedInventory;
     const searchLower = searchTerm.toLowerCase();
-    return processedInventory.filter((item) =>
-      item.productName.toLowerCase().includes(searchLower)
+    return processedInventory.filter(
+      (item) =>
+        item.productName.toLowerCase().includes(searchLower) ||
+        item.serialNumber.toLowerCase().includes(searchLower)
     );
   }, [processedInventory, searchTerm]);
 
+  // ✅ Columns (Added Serial Number)
   const columns = [
+    { field: "serialNumber", headerName: "Serial Number", flex: 1, minWidth: 150 },
     { field: "productName", headerName: "Product Name", minWidth: 200 },
     { field: "quantity", headerName: "Total Quantity", flex: 1, minWidth: 120 },
     { field: "usedQuantity", headerName: "Used Quantity", flex: 1, minWidth: 120 },
@@ -208,93 +208,91 @@ const InventoryView = () => {
   }
 
   return (
-  <Box p={3}>
-    {/* Snackbar */}
-    <Snackbar
-      open={snackbar.open}
-      autoHideDuration={3000}
-      onClose={handleCloseSnackbar}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-    >
-      <Alert
+    <Box p={3}>
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
-        severity={snackbar.severity}
-        sx={{ width: "100%" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {snackbar.message}
-      </Alert>
-    </Snackbar>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
-    {/* Card Container */}
-    <Box
-      sx={{
-        borderRadius: "20px",
-        overflow: "hidden",
-        boxShadow: "0 10px 40px -10px rgba(0,0,0,0.2)",
-        backdropFilter: "blur(20px)",
-        backgroundColor: "rgba(255,255,255,0.6)",
-      }}
-    >
-      {/* Toolbar: Search only */}
+      {/* Card Container */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          p: 2,
-          borderBottom: "1px solid rgba(255,255,255,0.5)",
+          borderRadius: "20px",
+          overflow: "hidden",
+          boxShadow: "0 10px 40px -10px rgba(0,0,0,0.2)",
+          backdropFilter: "blur(20px)",
+          backgroundColor: "rgba(255,255,255,0.6)",
         }}
       >
-        <MDSearchBar
-          placeholder="Search inventory..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        {/* Toolbar: Search only */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            p: 2,
+            borderBottom: "1px solid rgba(255,255,255,0.5)",
+          }}
+        >
+          <MDSearchBar
+            placeholder="Search inventory..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </Box>
+
+        {/* DataGrid */}
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ m: 2 }}>
+            {error}
+          </Alert>
+        ) : (
+          <MDDataGrid
+            rows={displayedInventory}
+            columns={columns}
+            getRowId={(row) => row._id}
+            pageSize={10}
+            rowsPerPageOptions={[5, 10, 20]}
+            disableSelectionOnClick
+            loading={loading || tableLoading}
+            disableTopRadius
+          />
+        )}
       </Box>
 
-      {/* DataGrid */}
-      {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Alert severity="error" sx={{ m: 2 }}>
-          {error}
-        </Alert>
-      ) : (
-        <MDDataGrid
-          rows={displayedInventory}
-          columns={columns}
-          getRowId={(row) => row._id}
-          pageSize={10}
-          rowsPerPageOptions={[5, 10, 20]}
-          disableSelectionOnClick
-          loading={loading || tableLoading}
-          disableTopRadius
-        />
-      )}
+      {/* Delete Dialog */}
+      <InventoryDelete
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Inventory"
+        content="Are you sure you want to delete this inventory item? This action cannot be undone."
+      />
+
+      {/* Edit Dialog */}
+      <EditInventory
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        item={selectedItem}
+        onSuccess={handleUpdateSuccess}
+      />
     </Box>
-
-    {/* Delete Dialog */}
-    <InventoryDelete
-      open={deleteDialogOpen}
-      onClose={() => setDeleteDialogOpen(false)}
-      onConfirm={handleConfirmDelete}
-      title="Delete Inventory"
-      content="Are you sure you want to delete this inventory item? This action cannot be undone."
-    />
-
-    {/* Edit Dialog */}
-    <EditInventory
-      open={editDialogOpen}
-      onClose={() => setEditDialogOpen(false)}
-      item={selectedItem}
-      onSuccess={handleUpdateSuccess}
-    />
-  </Box>
-);
-
+  );
 };
 
 export default InventoryView;
-
