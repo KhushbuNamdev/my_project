@@ -50,7 +50,7 @@ const ProductView = () => {
     product: null,
   });
 
-  // Fetch products
+  // ✅ Fetch products on load
   useEffect(() => {
     dispatch(fetchAllProducts())
       .unwrap()
@@ -60,11 +60,13 @@ const ProductView = () => {
       .catch(() => setProducts([]));
   }, [dispatch]);
 
+  // ✅ Format categories
   const formatCategories = (categoryIds) => {
     if (!categoryIds || !Array.isArray(categoryIds)) return "No categories";
     return categoryIds.map((cat) => cat.name).join(", ");
   };
 
+  // ✅ Edit handler
   const handleEditClick = (product) => {
     setEditDialog({
       open: true,
@@ -79,6 +81,7 @@ const ProductView = () => {
     });
   };
 
+  // ✅ Product updated success handler
   const handleProductUpdated = async () => {
     try {
       setSnackbar({
@@ -98,6 +101,7 @@ const ProductView = () => {
     }
   };
 
+  // ✅ Delete handlers
   const handleDeleteClick = (product) => {
     setDeleteDialog({ open: true, product });
   };
@@ -125,11 +129,40 @@ const ProductView = () => {
     }
   };
 
+  // ✅ Add quantity
   const handleAddQuantity = (product) => {
     setSelectedProduct(product);
     setOpenQuantityDialog(true);
   };
 
+  // ✅ Filter by search
+  const filteredProducts = products.filter((product) => {
+    const searchLower = searchQuery.toLowerCase();
+    const nameMatch = product.name?.toLowerCase().includes(searchLower);
+    const categoryMatch = product.categoryIds?.some((cat) =>
+      cat?.name?.toLowerCase().includes(searchLower)
+    );
+    return nameMatch || categoryMatch;
+  });
+
+  // ✅ Flatten specs while mapping rows
+  const rows = filteredProducts.map((product, index) => ({
+    id: product._id || `temp-${index}`,
+    _id: product._id,
+    name: product.name || "Unnamed Product",
+    categoryIds: product.categoryIds || [],
+    gstPercentage: product.gstPercentage || 0,
+    warranty: product.warranty || "",
+    inventory: product.inventory || { totalQuantity: 0 },
+    cca: product.specifications?.cca ?? "—",
+    dimensions: product.specifications?.dimensions ?? "—",
+    rc: product.specifications?.rc ?? "—",
+    weight: product.specifications?.weight
+      ? `${product.specifications.weight.value} ${product.specifications.weight.unit}`
+      : "—",
+  }));
+
+  // ✅ Table columns
   const columns = [
     { field: "name", headerName: "Product Name", flex: 1 },
     {
@@ -141,8 +174,18 @@ const ProductView = () => {
     {
       field: "gstPercentage",
       headerName: "GST (%)",
-      flex: 1,
+      flex: 0.7,
       renderCell: (params) => <>{params.value ? `${params.value}%` : "0%"}</>,
+    },
+    { field: "cca", headerName: "CCA", flex: 0.8 },
+    { field: "dimensions", headerName: "Dimensions", flex: 1 },
+    { field: "rc", headerName: "RC", flex: 0.7 },
+    { field: "weight", headerName: "Weight (kg)", flex: 0.8 },
+    {
+      field: "warranty",
+      headerName: "Warranty (Months)",
+      flex: 1,
+      renderCell: (params) => <>{params.value || "—"}</>,
     },
     {
       field: "inventory",
@@ -190,24 +233,7 @@ const ProductView = () => {
     },
   ];
 
-  const filteredProducts = products.filter((product) => {
-    const searchLower = searchQuery.toLowerCase();
-    const nameMatch = product.name?.toLowerCase().includes(searchLower);
-    const categoryMatch = product.categoryIds?.some((cat) =>
-      cat?.name?.toLowerCase().includes(searchLower)
-    );
-    return nameMatch || categoryMatch;
-  });
-
-  const rows = filteredProducts.map((product, index) => ({
-    id: product._id || `temp-${index}`,
-    _id: product._id,
-    name: product.name || "Unnamed Product",
-    categoryIds: product.categoryIds || [],
-    gstPercentage: product.gstPercentage || 0,
-    inventory: product.inventory || { totalQuantity: 0 },
-  }));
-
+  // ✅ Loading / error UI
   if (loading)
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -233,7 +259,7 @@ const ProductView = () => {
           backgroundColor: "rgba(255,255,255,0.6)",
         }}
       >
-        {/* Top Toolbar (Card Replacement) */}
+        {/* ✅ Top Toolbar */}
         <Box
           sx={{
             display: "flex",
@@ -251,16 +277,17 @@ const ProductView = () => {
           <MDButton onClick={() => setOpenAddDialog(true)}>Add Product</MDButton>
         </Box>
 
-        {/* DataGrid Section */}
+        {/* ✅ DataGrid */}
         <MDDataGrid
           rows={rows}
           columns={columns}
           pageSize={10}
-          disableTopRadius // 👈 joins perfectly with the toolbar
+          disableTopRadius
+      
         />
       </Box>
 
-      {/* Dialogs */}
+      {/* ✅ Dialogs */}
       <AddProduct
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}

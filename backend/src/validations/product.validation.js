@@ -64,23 +64,10 @@ const createProductSchema = Joi.object({
       'any.only': 'Warranty must be one of: 6, 12, 18, or 24 months'
     }),
   specifications: Joi.object({
-    dimensions: Joi.object({
-      length: Joi.number().min(0).default(0)
-        .messages({
-          'number.base': 'Length must be a number',
-          'number.min': 'Length cannot be negative'
-        }),
-      width: Joi.number().min(0).default(0)
-        .messages({
-          'number.base': 'Width must be a number',
-          'number.min': 'Width cannot be negative'
-        }),
-      height: Joi.number().min(0).default(0)
-        .messages({
-          'number.base': 'Height must be a number',
-          'number.min': 'Height cannot be negative'
-        })
-    }),
+    dimensions: Joi.string().trim().default('')
+      .messages({
+        'string.base': 'Dimensions must be a string'
+      }),
     cca: Joi.number().min(0).default(0)
       .messages({
         'number.base': 'CCA must be a number',
@@ -158,23 +145,10 @@ const updateProductSchema = Joi.object({
       'any.only': 'Warranty must be one of: 6, 12, 18, or 24 months'
     }),
   specifications: Joi.object({
-    dimensions: Joi.object({
-      length: Joi.number().min(0)
-        .messages({
-          'number.base': 'Length must be a number',
-          'number.min': 'Length cannot be negative'
-        }),
-      width: Joi.number().min(0)
-        .messages({
-          'number.base': 'Width must be a number',
-          'number.min': 'Width cannot be negative'
-        }),
-      height: Joi.number().min(0)
-        .messages({
-          'number.base': 'Height must be a number',
-          'number.min': 'Height cannot be negative'
-        })
-    }),
+    dimensions: Joi.string().trim().allow('').optional()
+      .messages({
+        'string.base': 'Dimensions must be a string'
+      }),
     cca: Joi.number().min(0)
       .messages({
         'number.base': 'CCA must be a number',

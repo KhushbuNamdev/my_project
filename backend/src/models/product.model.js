@@ -69,23 +69,9 @@ const productSchema = new Schema({
         default: {}
     },
     'specifications.dimensions': {
-        type: Object,
-        default: {}
-    },
-    'specifications.dimensions.length': {
-        type: Number,
-        min: [0, 'Length cannot be negative'],
-        default: 0
-    },
-    'specifications.dimensions.width': {
-        type: Number,
-        min: [0, 'Width cannot be negative'],
-        default: 0
-    },
-    'specifications.dimensions.height': {
-        type: Number,
-        min: [0, 'Height cannot be negative'],
-        default: 0
+        type: String,
+        trim: true,
+        default: ''
     },
     'specifications.cca': {
         type: Number,
@@ -116,11 +102,11 @@ const productSchema = new Schema({
     }
 },
 
- {
-    timestamps: true,
+    {
+        timestamps: true,
         toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
+        toObject: { virtuals: true }
+    });
 
 // Indexes for better query performance
 productSchema.index({ name: 'text' });
