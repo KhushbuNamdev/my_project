@@ -41,14 +41,14 @@ const createInventorySchema = Joi.object({
   })
 }).custom((value, helpers) => {
   if (value.serialNumbers && value.serialNumbers.length > 0) {
-    if (value.quantity && value.quantity !== value.serialNumbers.length) {
-      return helpers.message(
-        'Quantity must match the number of serial numbers provided'
-      );
+    // Set default quantity to 1 if not provided
+    if (!value.quantity) {
+      value.quantity = 1;
     }
 
-    if (!value.quantity) {
-      value.quantity = value.serialNumbers.length;
+    // Ensure we have at least one serial number
+    if (value.serialNumbers.length === 0) {
+      return helpers.message('At least one serial number is required');
     }
   }
 
