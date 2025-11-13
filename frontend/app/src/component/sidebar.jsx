@@ -23,6 +23,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import image from '../assets/image.png';
+
 import InventoryIcon from '@mui/icons-material/Inventory';
 const menuItems = [
   { text: 'Statistics', icon: <BarChartIcon />, path: '/dashboard/statistics' },
@@ -52,7 +53,7 @@ const Sidebar = ({ onLogout, collapsed, toggleSidebar }) => {
     borderRadius: '16px',
     padding: theme.spacing(2, 1.5, 2, 2),
 
- background:"#FFFFFF",
+// background:"#FFFFFF",
  //background:"rgba(5, 5, 5, 0.34)",
     backdropFilter: 'blur(20px)',
     border: '1px solid rgba(255, 255, 255, 0.4)',

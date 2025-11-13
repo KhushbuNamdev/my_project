@@ -133,67 +133,88 @@ const Salesmanview = () => {
     setSearchTerm(e.target.value.toLowerCase());
   };
 
-  return (
-    <Box p={3}>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        
+return (
+  <Box p={3}>
+    {/* Card Container */}
+    <Box
+      sx={{
+        borderRadius: '20px',
+        overflow: 'hidden',
+        boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
+        backdropFilter: 'blur(20px)',
+        backgroundColor: 'rgba(255,255,255,0.6)',
+      }}
+    >
+      {/* Toolbar: Search + Button */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          p: 2,
+          borderBottom: '1px solid rgba(255,255,255,0.5)',
+        }}
+      >
+        <MDSearchBar
+          placeholder="Search salespeople..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <MDButton variant="contained" color="primary" onClick={handleOpenDialog}>
+          Add Salesperson
+        </MDButton>
+      </Box>
 
-          <MDSearchBar
-            placeholder="Search salespeople..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-             minHeight={400} // ✅ enforce table min height
-          />
-          <MDButton
-            variant="contained"
-            color="primary"
-            onClick={handleOpenDialog}
-          >
-            Add Salesperson
-          </MDButton>
-        </Box>
-    
-
-      {/* ✅ Only shows users with role = salesman */}
+      {/* MDDataGrid */}
       <MDDataGrid
         rows={rows}
         columns={columns}
         loading={loading}
-        autoHeight
         pageSize={10}
         rowsPerPageOptions={[5, 10, 20]}
         disableSelectionOnClick
+        autoHeight
+        disableTopRadius
       />
-      
-      {/* Create Salesman Dialog */}
-      <CreateSalesman
-        open={openDialog}
-        onClose={handleCloseDialog}
-        onSubmit={handleCreateSalesman}
-        loading={loading}
-        error={error}
-      />
-
-      <DeleteSalesDialog
-        open={deleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-        salesId={selectedSalesId}
-        onDeleteSuccess={handleDeleteSuccess}
-      />
-      
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
-  );
+
+    {/* Create Salesman Dialog */}
+    <CreateSalesman
+      open={openDialog}
+      onClose={handleCloseDialog}
+      onSubmit={handleCreateSalesman}
+      loading={loading}
+      error={error}
+    />
+
+    <DeleteSalesDialog
+      open={deleteDialogOpen}
+      onClose={handleCloseDeleteDialog}
+      salesId={selectedSalesId}
+      onDeleteSuccess={handleDeleteSuccess}
+    />
+
+    {/* Snackbar */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={6000}
+      onClose={handleCloseSnackbar}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+    >
+      <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+
+    {/* Error message */}
+    {error && (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        {error}
+      </Alert>
+    )}
+  </Box>
+);
+
 };
 
 export default Salesmanview;

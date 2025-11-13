@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -23,7 +22,7 @@ import MDSearchbar from "../../custom/MDsearchbar";
 import AddProduct from "./addproduct";
 import DeleteProductDialog from "./deleteproduct";
 import EditProduct from "./editproduct";
-import AddQuantityDialog from "./addQuantity"; // ✅ New Import
+import AddQuantityDialog from "./addQuantity";
 
 const ProductView = () => {
   const dispatch = useDispatch();
@@ -31,31 +30,27 @@ const ProductView = () => {
   const { products: initialProducts = [], loading, error } = useSelector(
     (state) => state.product
   );
-  const { categories = [] } = useSelector((state) => state.category);
 
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openQuantityDialog, setOpenQuantityDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
-
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     product: null,
   });
-
   const [editDialog, setEditDialog] = useState({
     open: false,
     product: null,
   });
 
-  // 🔹 Fetch products on mount
+  // Fetch products
   useEffect(() => {
     dispatch(fetchAllProducts())
       .unwrap()
@@ -65,13 +60,11 @@ const ProductView = () => {
       .catch(() => setProducts([]));
   }, [dispatch]);
 
-  // 🔹 Format category names
   const formatCategories = (categoryIds) => {
     if (!categoryIds || !Array.isArray(categoryIds)) return "No categories";
     return categoryIds.map((cat) => cat.name).join(", ");
   };
 
-  // 🔹 Edit Product
   const handleEditClick = (product) => {
     setEditDialog({
       open: true,
@@ -86,7 +79,6 @@ const ProductView = () => {
     });
   };
 
-  // Update Success Handler
   const handleProductUpdated = async () => {
     try {
       setSnackbar({
@@ -106,110 +98,80 @@ const ProductView = () => {
     }
   };
 
-  // 🔹 Delete Product
   const handleDeleteClick = (product) => {
     setDeleteDialog({ open: true, product });
   };
 
   const handleDeleteConfirm = async () => {
-  if (!deleteDialog.product || !deleteDialog.product._id) return;
+    if (!deleteDialog.product || !deleteDialog.product._id) return;
 
-  // 🔹 Immediately close the dialog before async work
-  const productId = deleteDialog.product._id;
-  setDeleteDialog({ open: false, product: null });
-
-  try {
-    await dispatch(removeProduct(productId)).unwrap();
-
-    // Update UI instantly
-    setProducts((prev) => prev.filter((p) => p._id !== productId));
-
-    // ✅ Refresh snackbar
-    setSnackbar({
-      open: true,
-      message: "Product deleted successfully!",
-      severity: "success",
-    });
-  } catch (error) {
-    setSnackbar({
-      open: true,
-      message: "Failed to delete product",
-      severity: "error",
-    });
-  }
-};
-
-
-  const handleDeleteClose = () => {
+    const productId = deleteDialog.product._id;
     setDeleteDialog({ open: false, product: null });
+
+    try {
+      await dispatch(removeProduct(productId)).unwrap();
+      setProducts((prev) => prev.filter((p) => p._id !== productId));
+      setSnackbar({
+        open: true,
+        message: "Product deleted successfully!",
+        severity: "success",
+      });
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Failed to delete product",
+        severity: "error",
+      });
+    }
   };
 
-  // 🔹 Open Quantity Dialog
   const handleAddQuantity = (product) => {
     setSelectedProduct(product);
     setOpenQuantityDialog(true);
   };
 
-  // 🔹 Table Columns
   const columns = [
     { field: "name", headerName: "Product Name", flex: 1 },
     {
       field: "categoryIds",
       headerName: "Categories",
       flex: 1,
-      renderCell: (params) => (
-      <>  {formatCategories(params.value)}</>
-         
-      
-      ),
+      renderCell: (params) => <>{formatCategories(params.value)}</>,
     },
     {
       field: "gstPercentage",
       headerName: "GST (%)",
-  flex:1,
-      renderCell: (params) => (
-        <> {params.value ? `${params.value}%` : "0%"}</>
-      ),
+      flex: 1,
+      renderCell: (params) => <>{params.value ? `${params.value}%` : "0%"}</>,
     },
     {
       field: "inventory",
       headerName: "Total Quantity",
       flex: 1,
       renderCell: (params) => (
-       <>{params.row.inventory?.totalQuantity ?? 0}</>
+        <>{params.row.inventory?.totalQuantity ?? 0}</>
       ),
     },
     {
       field: "actions",
       headerName: "Actions",
-      flex: 1,
+      flex: 1.5,
       renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={1} mt={1}>
+        <Box display="flex" alignItems="center" gap={1}>
           <Tooltip title="Edit">
-            <IconButton
-            
-              size="small"
-              onClick={() => handleEditClick(params.row)}
-            >
+            <IconButton size="small" onClick={() => handleEditClick(params.row)}>
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-
           <Tooltip title="Delete">
-            <IconButton
-             
-              size="small"
-              onClick={() => handleDeleteClick(params.row)}
-            >
+            <IconButton size="small" onClick={() => handleDeleteClick(params.row)}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-
           <Tooltip title="Add Quantity">
             <MDButton
               onClick={() => handleAddQuantity(params.row)}
               sx={{
-               
                 px: 1.5,
                 py: 0.3,
                 fontSize: "0.7rem",
@@ -228,7 +190,6 @@ const ProductView = () => {
     },
   ];
 
-  // 🔹 Search Filter
   const filteredProducts = products.filter((product) => {
     const searchLower = searchQuery.toLowerCase();
     const nameMatch = product.name?.toLowerCase().includes(searchLower);
@@ -238,7 +199,6 @@ const ProductView = () => {
     return nameMatch || categoryMatch;
   });
 
-  // 🔹 Format Rows
   const rows = filteredProducts.map((product, index) => ({
     id: product._id || `temp-${index}`,
     _id: product._id,
@@ -248,87 +208,75 @@ const ProductView = () => {
     inventory: product.inventory || { totalQuantity: 0 },
   }));
 
-  // Add Product Success Handler
-  const handleProductAdded = async () => {
-    try {
-      // Fetch the latest products from the server
-      const result = await dispatch(fetchAllProducts()).unwrap();
-      const updatedProducts = Array.isArray(result) 
-        ? result 
-        : result?.products || result?.data || [];
-      
-      // Update the products list with fresh data
-      setProducts(updatedProducts);
-      
-      // Show success message
-      setSnackbar({
-        open: true,
-        message: "Product added successfully!",
-        severity: "success",
-      });
-      
-      // Close the add dialog
-      setOpenAddDialog(false);
-    } catch (error) {
-      console.error("Failed to refresh products:", error);
-      setSnackbar({
-        open: true,
-        message: "Product was created but failed to refresh the list",
-        severity: "warning",
-      });
-    }
-  };
-
-  // 🔹 Loading and Error States
-  if (loading) {
+  if (loading)
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
         <CircularProgress />
       </Box>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <Box p={3}>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
-  }
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Top Bar */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-        <MDSearchbar
-         color="#FFFFFF"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          minHeight={400} // ✅ enforce table min height
+      <Box
+        sx={{
+          borderRadius: "20px",
+          overflow: "hidden",
+          boxShadow: "0 10px 40px -10px rgba(0,0,0,0.2)",
+          backdropFilter: "blur(20px)",
+          backgroundColor: "rgba(255,255,255,0.6)",
+        }}
+      >
+        {/* Top Toolbar (Card Replacement) */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            p: 2,
+            borderBottom: "1px solid rgba(255,255,255,0.5)",
+          }}
+        >
+          <MDSearchbar
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <MDButton onClick={() => setOpenAddDialog(true)}>Add Product</MDButton>
+        </Box>
+
+        {/* DataGrid Section */}
+        <MDDataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={10}
+          disableTopRadius // 👈 joins perfectly with the toolbar
         />
-        <MDButton onClick={() => setOpenAddDialog(true)}>Add Product</MDButton>
       </Box>
 
-      {/* Data Grid */}
-      <MDDataGrid rows={rows} columns={columns} pageSize={10} />
-
-      {/* Add Product Dialog */}
+      {/* Dialogs */}
       <AddProduct
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
-        onSuccess={handleProductAdded}
+        onSuccess={async () => {
+          const res = await dispatch(fetchAllProducts()).unwrap();
+          setProducts(Array.isArray(res) ? res : res?.products || res?.data || []);
+        }}
       />
 
-      {/* Delete Product Dialog */}
       <DeleteProductDialog
         open={deleteDialog.open}
-        onClose={handleDeleteClose}
+        onClose={() => setDeleteDialog({ open: false, product: null })}
         onConfirm={handleDeleteConfirm}
         productName={deleteDialog.product?.name || "this product"}
       />
 
-      {/* ✅ New Separate Add Quantity Dialog */}
       <AddQuantityDialog
         open={openQuantityDialog}
         onClose={() => setOpenQuantityDialog(false)}
@@ -339,7 +287,13 @@ const ProductView = () => {
         }}
       />
 
-      {/* Snackbar */}
+      <EditProduct
+        open={editDialog.open}
+        onClose={() => setEditDialog({ open: false, product: null })}
+        product={editDialog.product}
+        onSuccess={handleProductUpdated}
+      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -350,14 +304,6 @@ const ProductView = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-      {/* Edit Product Dialog */}
-      <EditProduct
-        open={editDialog.open}
-        onClose={() => setEditDialog({ open: false, product: null })}
-        product={editDialog.product}
-        onSuccess={handleProductUpdated}
-      />
     </Box>
   );
 };

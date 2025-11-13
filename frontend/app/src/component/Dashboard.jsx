@@ -66,45 +66,45 @@ const DashboardLayout = ({ onLogout }) => {
     <Box sx={{ display: 'flex', }}>
       {/* Top Navbar */}
       <AppBar
-        position="fixed" 
-        sx={{
-          height:"50px",  
-       
-width: { 
-  xs: 'calc(70% - 40px)',
-  sm: `calc(100% - ${collapsed ? 150 : drawerWidth + 75}px)`
-},
+  position="fixed"
+  sx={{
+    height: "70px",
+    width: {
+      xs: 'calc(70% - 40px)',
+      sm: `calc(100% - ${collapsed ? 150 : drawerWidth + 75}px)`
+    },
+    mt: "20px",
+    ml: "10px",
+    mr: "40px",
+    borderRadius: '16px',
+    color: 'text.primary',
+    zIndex: 1299,
+    backdropFilter: 'blur(20px)',
+    boxShadow: `
+      0 4px 20px 0 rgba(0, 0, 0, 0.1),
+      0 2px 10px 0 rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.9)
+    `,
+    background: `
+      radial-gradient(circle at 20% 40%, rgba(66, 133, 244, 0.25) 0%, rgba(66, 133, 244, 0.1) 60%, rgba(255, 255, 255, 0.05) 100%),
+      linear-gradient(to right, rgba(255, 255, 255, 0.8), rgba(255,255,255,0.6))
+    `, // 🌈 Gradient background
+    transition: (theme) =>
+      theme.transitions.create(['margin', 'width', 'transform'], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: `
+        0 6px 30px 0 rgba(0, 0, 0, 0.12),
+        0 3px 15px 0 rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.9)
+      `,
+    },
+  }}
+>
 
-          //mr: '11px',
-          mt: '49px',
-          ml:"10px",
-        mr:"40px",
-          borderRadius: '16px',
-
-          backdropFilter: 'blur(20px)',
-          //border: '1px solid rgba(255, 255, 255, 0.5)',
-          color: 'text.primary',
-          boxShadow: `
-            0 4px 20px 0 rgba(0, 0, 0, 0.1),
-            0 2px 10px 0 rgba(0, 0, 0, 0.05),
-            inset 0 1px 0 0 rgba(255, 255, 255, 0.9)
-          `,
-          zIndex: 1299,
-          transition: (theme) =>
-            theme.transitions.create(['margin', 'width', 'transform'], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: `
-              0 6px 30px 0 rgba(0, 0, 0, 0.12),
-              0 3px 15px 0 rgba(0, 0, 0, 0.08),
-              inset 0 1px 0 0 rgba(255, 255, 255, 0.9)
-            `,
-          },
-        }}
-      >
         <Toolbar>
           <Box >
           
@@ -117,13 +117,13 @@ width: {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 ,pb:2,  color:"#fafafa"}}>
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 ,  }}>
               {currentTitle}
             </Typography>
           </Box>
 
           {/* Avatar dropdown */}
-          <IconButton onClick={handleMenuOpen} sx={{ pb:3 ,
+          <IconButton onClick={handleMenuOpen} sx={{  
        
 ml:"90%",
 position:"fixed"
@@ -227,8 +227,9 @@ position:"fixed"
     },
           ml:"1px",
           pl: { xs: 0, sm: '16px' },
-          mt: '100px',
-          minHeight: 'calc(100vh - 116px)',
+          //mt: '100px',
+          mt:"70px",
+          minHeight: 'calc(102vh - 118px)',
           transition: (theme) =>
             theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,

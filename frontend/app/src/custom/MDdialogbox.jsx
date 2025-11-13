@@ -66,7 +66,7 @@ const MDDialogBox = ({
       <DialogContent
         dividers
         sx={{
-          backgroundColor: "#fff",
+        background:"transparent",
           borderBottom: "1px solid rgba(0,0,0,0.1)",
         }}
       >
@@ -77,7 +77,7 @@ const MDDialogBox = ({
       {actions && (
         <DialogActions
           sx={{
-            backgroundColor: "#fff",
+            backgroundColor: "transparent",
             justifyContent: "flex-end",
             p: 2,
           }}

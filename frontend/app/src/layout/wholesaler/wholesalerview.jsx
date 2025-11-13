@@ -115,7 +115,7 @@ const Wholesalerview = () => {
     { field: 'businessName', headerName: 'Business Name', flex: 1, minWidth: 150 },
     { field: 'gstNumber', headerName: 'GST Number', flex: 1, minWidth: 150 },
     { field: 'adharNumber', headerName: 'Aadhaar Number', flex: 1, minWidth: 150 },
-    { field: 'fullAddress', headerName: 'Address', flex: 1.5, minWidth: 250 },
+    { field: 'fullAddress', headerName: 'Address', flex: 1.5, minWidth: 300 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -168,37 +168,92 @@ const Wholesalerview = () => {
   // 🔹 Render
   // ===============================
   return (
-    <Box p={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <MDSearchBar value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} placeholder="Search wholesalers..." />
+  <Box p={3}>
+    {/* Card Container */}
+    <Box
+      sx={{
+        borderRadius: '20px',
+        overflow: 'hidden',
+        boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
+        backdropFilter: 'blur(20px)',
+        backgroundColor: 'rgba(255,255,255,0.6)',
+      }}
+    >
+      {/* Toolbar: Search + Button */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          p: 2,
+          borderBottom: '1px solid rgba(255,255,255,0.5)',
+        }}
+      >
+        <MDSearchBar
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+          placeholder="Search wholesalers..."
+        />
         <MDButton onClick={handleOpenDialog} variant="contained" color="primary">
           Add Wholesaler
         </MDButton>
       </Box>
 
-      {/* ✅ MDDataGrid */}
-      <MDDataGrid rows={filteredRows} columns={columns} loading={loading}  pageSize={5} />
-
-      {/* Dialogs */}
-      <CreateWholesalerDialog open={openDialog} onClose={handleCloseDialog} onCreate={handleCreateWholesaler} />
-      <EditWholesalerDialog open={editDialogOpen} onClose={handleCloseEditDialog} wholesaler={selectedWholesaler} onSuccess={handleEditSuccess} />
-      <DeleteWholesalerDialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog} wholesalerId={selectedWholesalerId} onDeleteSuccess={handleDeleteSuccess} />
-
-      {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
-      {/* Error message if any */}
-      {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {/* MDDataGrid */}
+      <MDDataGrid
+        rows={filteredRows}
+        columns={columns}
+        loading={loading}
+        pageSize={5}
+        disableTopRadius
+      />
     </Box>
-  );
+
+    {/* Dialogs */}
+    <CreateWholesalerDialog
+      open={openDialog}
+      onClose={handleCloseDialog}
+      onCreate={handleCreateWholesaler}
+    />
+    <EditWholesalerDialog
+      open={editDialogOpen}
+      onClose={handleCloseEditDialog}
+      wholesaler={selectedWholesaler}
+      onSuccess={handleEditSuccess}
+    />
+    <DeleteWholesalerDialog
+      open={deleteDialogOpen}
+      onClose={handleCloseDeleteDialog}
+      wholesalerId={selectedWholesalerId}
+      onDeleteSuccess={handleDeleteSuccess}
+    />
+
+    {/* Snackbar */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={6000}
+      onClose={handleCloseSnackbar}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+    >
+      <Alert
+        onClose={handleCloseSnackbar}
+        severity={snackbar.severity}
+        variant="filled"
+        sx={{ width: '100%' }}
+      >
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+
+    {/* Error message if any */}
+    {error && (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        {error}
+      </Alert>
+    )}
+  </Box>
+);
+
 };
 
 export default Wholesalerview;

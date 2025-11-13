@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Box, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -8,7 +6,8 @@ const MDSearchBar = ({
   value,
   onChange,
   placeholder = 'Search...',
-  width = '300px',
+  width = '400px',
+  height = '40px', // ✅ added height prop
   sx = {},
 }) => {
   return (
@@ -16,9 +15,8 @@ const MDSearchBar = ({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        background: '#000000ff',
+        border: '2px solid #6e6e6eff',
         borderRadius: '12px',
-        p: 0.8,
         boxShadow: '0px 2px 6px rgba(0,0,0,0.15)',
         ...sx,
       }}
@@ -28,31 +26,32 @@ const MDSearchBar = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        variant="standard"
+        variant="outlined"
         InputProps={{
-          disableUnderline: true, // ✅ removes underline
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon sx={{ color: '#ffffffff' }} /> {/* ✅ icon color */}
+              <SearchIcon fontSize="small" />
             </InputAdornment>
           ),
+          style: {
+            height: height, // ✅ applied height here
+            padding: '0 10px',
+          },
         }}
         sx={{
           width,
           backgroundColor: 'transparent',
           border: 'none',
-          borderRadius: '10px',
+          '& .MuiOutlinedInput-notchedOutline': {
+            border: 'none',
+          },
           '& .MuiInputBase-input': {
-            padding: '8px 10px',
             fontSize: '15px',
-            color: '#ffffffff', // ✅ text color
+            color: '#000000ff',
             '&::placeholder': {
-              color: '#ffffffff', // ✅ placeholder color
+              color: '#000000ff',
               opacity: 0.8,
             },
-          },
-          '& .MuiInputBase-root': {
-            border: 'none',
           },
         }}
       />

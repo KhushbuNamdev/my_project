@@ -55,7 +55,7 @@ const handleDeleteClick = (category) => {
       field: "description",
       headerName: "Description",
       flex: 2,
-      minWidth: 300,
+      minWidth: 200,
       renderCell: (params) => (
        
           
@@ -68,11 +68,11 @@ const handleDeleteClick = (category) => {
     {
       field: "actions",
       headerName: "Actions",
-      width: 120,
+      width: 200,
       sortable: false,
       align: "center",
       renderCell: (params) => (
-        <Box display="flex" justifyContent="center" alignItems="center">
+        <Box display="flex" justifyContent="flex-start" alignItems="center" sx={{pr:"10px"}}>
           <Tooltip title="Edit">
             <IconButton  onClick={() => handleEditClick(params.row)}>
             <EditIcon color="dark"/>
@@ -102,16 +102,28 @@ const handleDeleteClick = (category) => {
         category.description?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
 
-  return (
-        <Box p={3}>
+ return (
+  <Box p={3}>
+    {/* Card Container */}
+    <Box
+      sx={{
+        borderRadius: '20px',
+        overflow: 'hidden',
+        boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
+        backdropFilter: 'blur(20px)',
+        backgroundColor: 'rgba(255,255,255,0.6)',
+      }}
+    >
+      {/* Toolbar: Search + Add Button */}
       <Box
         sx={{
-          mb: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-        
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          p: 2,
+          borderBottom: '1px solid rgba(255,255,255,0.5)',
+          flexWrap: 'wrap',
+          gap: 2
         }}
       >
         <MDSearchBar
@@ -119,11 +131,12 @@ const handleDeleteClick = (category) => {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search categories..."
         />
-        <MDButton onClick={() => setOpenAddDialog(true)} >
+        <MDButton onClick={() => setOpenAddDialog(true)}>
           Add New Category
         </MDButton>
       </Box>
 
+      {/* MDDataGrid */}
       {loading && categories.length === 0 ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress />
@@ -131,37 +144,41 @@ const handleDeleteClick = (category) => {
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : (
-        <MDDataGrid rows={filteredCategories} columns={columns} pageSize={10} />
-      )}
-
-      {/* ✅ Add Dialog */}
-      <AddCategory
-        open={openAddDialog}
-        onClose={() => setOpenAddDialog(false)}
-        onSuccess={handleAddSuccess}
-      />
-
-      {/* ✅ Edit Dialog */}
-      <EditCategory
-        open={openEditDialog}
-        onClose={() => setOpenEditDialog(false)}
-        onSuccess={handleEditSuccess}
-        category={selectedCategory}
-      />
-
-{/* Delete Dialog */}
-      {openDeleteDialog && (
-        <DeleteCategoryDialog
-          open={openDeleteDialog}
-          onClose={() => setOpenDeleteDialog(false)}
-          categoryId={selectedCategory?._id}
+        <MDDataGrid
+          rows={filteredCategories}
+          columns={columns}
+          pageSize={10}
+          disableTopRadius
         />
       )}
-
-
-
     </Box>
-  );
+
+    {/* Add Dialog */}
+    <AddCategory
+      open={openAddDialog}
+      onClose={() => setOpenAddDialog(false)}
+      onSuccess={handleAddSuccess}
+    />
+
+    {/* Edit Dialog */}
+    <EditCategory
+      open={openEditDialog}
+      onClose={() => setOpenEditDialog(false)}
+      onSuccess={handleEditSuccess}
+      category={selectedCategory}
+    />
+
+    {/* Delete Dialog */}
+    {openDeleteDialog && (
+      <DeleteCategoryDialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        categoryId={selectedCategory?._id}
+      />
+    )}
+  </Box>
+);
+
 };
 
 export default CategoryView;
