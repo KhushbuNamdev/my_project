@@ -66,18 +66,32 @@ export const updateProfile = createAsyncThunk(
 );
 
 // ✅ Change Password
+
 export const changePassword = createAsyncThunk(
   'user/changePassword',
   async ({ currentPassword, newPassword }, { rejectWithValue }) => {
     try {
+      if (!currentPassword || !newPassword) {
+        return rejectWithValue('Both current and new password are required');
+      }
+      if (newPassword.length < 6) {
+        return rejectWithValue('Password must be at least 6 characters');
+      }
+      
       const response = await userApi.changePassword(currentPassword, newPassword);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to change password');
+      const errorMessage = error.response?.data?.message || 
+                         error.message || 
+                         'Failed to change password';
+      return rejectWithValue(
+        typeof errorMessage === 'object' ? 
+        JSON.stringify(errorMessage) : 
+        errorMessage
+      );
     }
   }
 );
-
 // ✅ Update User
 export const updateUser = createAsyncThunk(
   'user/updateUser',

@@ -190,11 +190,15 @@ export const loginValidation = Joi.object({
 
 // Validation for updating user
 export const updateUserValidation = Joi.object({
+  // Password update fields
+  currentPassword: Joi.string().optional(),
+  password: Joi.string().min(6).optional().messages({
+    'string.min': 'New password must be at least 6 characters long',
+  }),
   name: Joi.string().min(2).max(50).messages({
     'string.min': 'Name must be at least 2 characters long',
     'string.max': 'Name cannot be longer than 50 characters',
   }),
-  // Wholesaler specific fields
   businessName: Joi.string().trim().messages({
     'string.empty': 'Business name cannot be empty',
   }),
@@ -241,4 +245,15 @@ export const updateUserValidation = Joi.object({
   role: Joi.string().valid('superadmin', 'wholesaler', 'sales', 'retailer').messages({
     'any.only': 'Invalid role',
   }),
+}).custom((value, helpers) => {
+  // If either password or currentPassword is provided, both are required
+  if (value.password && !value.currentPassword) {
+    return helpers.error('any.required', { key: 'currentPassword' });
+  }
+  if (value.currentPassword && !value.password) {
+    return helpers.error('any.required', { key: 'password' });
+  }
+  return value;
+}).messages({
+  'any.required': '{{#key}} is required when updating password',
 }).min(1);

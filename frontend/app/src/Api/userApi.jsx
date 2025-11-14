@@ -27,22 +27,19 @@ const userApi = {
   },
 
   // Change password
-  changePassword: async (currentPassword, newPassword) => {
-    try {
-      const response = await api.put('/users/profile', {
-        currentPassword,
-        password: newPassword  // Using 'password' to match backend field
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Password change error:', error.response?.data || error.message);
-      // Return a more user-friendly error message
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Failed to update password. Please try again.';
-      throw new Error(errorMessage);
-    }
-  },
+  // In userApi.jsx
+changePassword: async (currentPassword, newPassword) => {
+  try {
+    const response = await api.put('/users/profile', {
+      currentPassword,
+      password: newPassword  // Match backend's expected field name
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Password change error:', error.response?.data || error.message);
+    throw error;
+  }
+},
 
   // Create a new user
   createUser: async (userData) => {
