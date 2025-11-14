@@ -163,75 +163,80 @@ const ProductView = () => {
   }));
 
   // ✅ Table columns
-  const columns = [
-    { field: "name", headerName: "Product Name", flex: 1 },
-    {
-      field: "categoryIds",
-      headerName: "Categories",
-      flex: 1,
-      renderCell: (params) => <>{formatCategories(params.value)}</>,
-    },
-    {
-      field: "gstPercentage",
-      headerName: "GST (%)",
-      flex: 0.7,
-      renderCell: (params) => <>{params.value ? `${params.value}%` : "0%"}</>,
-    },
-    { field: "cca", headerName: "CCA", flex: 0.8 },
-    { field: "dimensions", headerName: "Dimensions", flex: 1 },
-    { field: "rc", headerName: "RC", flex: 0.7 },
-    { field: "weight", headerName: "Weight (kg)", flex: 0.8 },
-    {
-      field: "warranty",
-      headerName: "Warranty (Months)",
-      flex: 1,
-      renderCell: (params) => <>{params.value || "—"}</>,
-    },
-    {
-      field: "inventory",
-      headerName: "Total Quantity",
-      flex: 1,
-      renderCell: (params) => (
-        <>{params.row.inventory?.totalQuantity ?? 0}</>
-      ),
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      flex: 1.5,
-      renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={1}>
-          <Tooltip title="Edit">
-            <IconButton size="small" onClick={() => handleEditClick(params.row)}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton size="small" onClick={() => handleDeleteClick(params.row)}>
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Add Quantity">
-            <MDButton
-              onClick={() => handleAddQuantity(params.row)}
-              sx={{
-                px: 1.5,
-                py: 0.3,
-                fontSize: "0.7rem",
-                minWidth: "auto",
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-              }}
-            >
-              <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
-              Add
-            </MDButton>
-          </Tooltip>
-        </Box>
-      ),
-    },
-  ];
+  // 🟦 ONLY CHANGES DONE: Added minWidth to columns
+// Everything else same as your original file
+
+const columns = [
+  { field: "name", headerName: "Product Name", minWidth: 200 },
+  {
+    field: "categoryIds",
+    headerName: "Categories",
+    minWidth: 200,
+    renderCell: (params) => <>{formatCategories(params.value)}</>,
+  },
+  {
+    field: "gstPercentage",
+    headerName: "GST (%)",
+    minWidth: 120,
+    renderCell: (params) => <>{params.value ? `${params.value}%` : "0%"}</>,
+  },
+  { field: "cca", headerName: "CCA", minWidth: 150 },
+  { field: "dimensions", headerName: "Dimensions", minWidth: 180 },
+  { field: "rc", headerName: "RC", minWidth: 130 },
+  { field: "weight", headerName: "Weight (kg)", minWidth: 150 },
+  {
+    field: "warranty",
+    headerName: "Warranty (Months)",
+    minWidth: 180,
+    renderCell: (params) => <>{params.value || "—"}</>,
+  },
+  {
+    field: "inventory",
+    headerName: "Total Quantity",
+    minWidth: 160,
+    renderCell: (params) => (
+      <>{params.row.inventory?.totalQuantity ?? 0}</>
+    ),
+  },
+  {
+    field: "actions",
+    headerName: "Actions",
+    minWidth: 250,
+    renderCell: (params) => (
+      <Box display="flex" alignItems="center" gap={1}>
+        <Tooltip title="Edit">
+          <IconButton size="small" onClick={() => handleEditClick(params.row)}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Delete">
+          <IconButton size="small" onClick={() => handleDeleteClick(params.row)}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Add Quantity">
+          <MDButton
+            onClick={() => handleAddQuantity(params.row)}
+            sx={{
+              px: 1.5,
+              py: 0.3,
+              fontSize: "0.7rem",
+              minWidth: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+            }}
+          >
+            <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+            Add
+          </MDButton>
+        </Tooltip>
+      </Box>
+    ),
+  },
+];
 
   // ✅ Loading / error UI
   if (loading)

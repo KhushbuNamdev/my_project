@@ -70,11 +70,16 @@ export const updateUser = async (req, res) => {
         user.role = req.body.role;
       }
 
-      // Update wholesaler specific fields
-      if (user.role === 'wholesaler') {
+      // Update business account fields for wholesaler/retailer
+      if (['wholesaler', 'retailer'].includes(user.role)) {
         user.businessName = req.body.businessName || user.businessName;
         user.gstNumber = req.body.gstNumber || user.gstNumber;
         user.adharNumber = req.body.adharNumber || user.adharNumber;
+
+        // Update business type for retailers
+        if (user.role === 'retailer' && req.body.businessType) {
+          user.businessType = req.body.businessType;
+        }
 
         // Update address if provided
         if (req.body.address) {
@@ -93,16 +98,26 @@ export const updateUser = async (req, res) => {
       }
 
       const updatedUser = await user.save();
-      const { _id, name, email, role } = updatedUser;
+      const { _id, name, email, role, businessName, businessType, gstNumber, adharNumber, address } = updatedUser;
+
+      // Prepare response data based on role
+      const responseData = {
+        _id,
+        name,
+        email,
+        role,
+        ...(['wholesaler', 'retailer'].includes(role) && {
+          businessName,
+          ...(role === 'retailer' && { businessType }),
+          ...(gstNumber && { gstNumber }),
+          ...(adharNumber && { adharNumber }),
+          ...(address && { address })
+        })
+      };
 
       res.json({
         success: true,
-        data: {
-          _id,
-          name,
-          email,
-          role,
-        },
+        data: responseData,
       });
     } else {
       res.status(404).json({

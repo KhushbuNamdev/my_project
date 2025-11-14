@@ -29,13 +29,18 @@ const userApi = {
   // Change password
   changePassword: async (currentPassword, newPassword) => {
     try {
-      const response = await api.put('/users/change-password', {
+      const response = await api.put('/users/profile', {
         currentPassword,
-        newPassword,
+        password: newPassword  // Using 'password' to match backend field
       });
       return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error('Password change error:', error.response?.data || error.message);
+      // Return a more user-friendly error message
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Failed to update password. Please try again.';
+      throw new Error(errorMessage);
     }
   },
 

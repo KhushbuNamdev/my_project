@@ -15,13 +15,13 @@ const userSchema = new mongoose.Schema(
       sparse: true, // Allows multiple null/empty values for uniqueness
       default: null,
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           if (v === null || v === '') return true; // Allow null or empty string
           return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
         },
         message: 'Please provide a valid email address'
       },
-      set: function(v) {
+      set: function (v) {
         // Convert empty string to null
         return v === '' ? null : v;
       }
@@ -39,24 +39,24 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['superadmin', 'wholesaler', 'sales'],
+      enum: ['superadmin', 'wholesaler', 'retailer', 'sales'],
       required: [true, 'Role is required'],
     },
-    // Wholesaler specific fields
+    // Business name for both wholesaler and retailer
     businessName: {
       type: String,
       trim: true,
-      required: function() {
-        return this.role === 'wholesaler';
+      required: function () {
+        return ['wholesaler', 'retailer'].includes(this.role);
       },
       validate: {
-        validator: function(v) {
-          if (this.role === 'wholesaler') {
+        validator: function (v) {
+          if (['wholesaler', 'retailer'].includes(this.role)) {
             return v && v.length > 0;
           }
           return true;
         },
-        message: 'Business name is required for wholesalers'
+        message: 'Business name is required for wholesalers and retailers'
       }
     },
     adharNumber: {
@@ -64,17 +64,17 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: false,
       default: null,
-      
+
     },
     gstNumber: {
       type: String,
       trim: true,
-      required: function() {
-        return this.role === 'wholesaler';
+      required: function () {
+        return ['wholesaler', 'retailer'].includes(this.role);
       },
       validate: {
-        validator: function(v) {
-          if (this.role === 'wholesaler') {
+        validator: function (v) {
+          if (['wholesaler', 'retailer'].includes(this.role)) {
             return /^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(v);
           }
           return true;
@@ -86,33 +86,33 @@ const userSchema = new mongoose.Schema(
       street: {
         type: String,
         trim: true,
-        required: function() {
-          return this.role === 'wholesaler';
+        required: function () {
+          return ['wholesaler', 'retailer'].includes(this.role);
         }
       },
       city: {
         type: String,
         trim: true,
-        required: function() {
-          return this.role === 'wholesaler';
+        required: function () {
+          return ['wholesaler', 'retailer'].includes(this.role);
         }
       },
       state: {
         type: String,
         trim: true,
-        required: function() {
-          return this.role === 'wholesaler';
+        required: function () {
+          return ['wholesaler', 'retailer'].includes(this.role);
         }
       },
       pincode: {
         type: String,
         trim: true,
-        required: function() {
-          return this.role === 'wholesaler';
+        required: function () {
+          return ['wholesaler', 'retailer'].includes(this.role);
         },
         validate: {
-          validator: function(v) {
-            if (this.role === 'wholesaler') {
+          validator: function (v) {
+            if (['wholesaler', 'retailer'].includes(this.role)) {
               return /^\d{6}$/.test(v);
             }
             return true;
@@ -124,8 +124,8 @@ const userSchema = new mongoose.Schema(
         type: String,
         trim: true,
         default: 'India',
-        required: function() {
-          return this.role === 'wholesaler';
+        required: function () {
+          return ['wholesaler', 'retailer'].includes(this.role);
         }
       }
     },
@@ -138,7 +138,7 @@ const userSchema = new mongoose.Schema(
 // Hash password before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

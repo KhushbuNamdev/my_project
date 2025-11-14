@@ -15,11 +15,13 @@ import { useLocation, useNavigate, Outlet, Routes, Route, Navigate } from 'react
 import Sidebar from './sidebar';
 import Statistics from "../layout/statistics"
 import Productview from '../layout/product/productview.jsx';
-import Wholesalerview from '../layout/wholesaler/wholesalerview.jsx';
+///import Wholesalerview from '../layout/wholesaler/wholesalerview.jsx';
+import Customerview from '../layout/wholesaler/customerview.jsx';
 import Categoryview from '../layout/categories/categoryview.jsx';
 import Salesview from '../layout/sales/salesview.jsx';
 import Profilepage from '../layout/profile/profilepage.jsx';
 import InventoryView from '../layout/inventory/inventoryview.jsx';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 const drawerWidth = 240;
 
 const DashboardLayout = ({ onLogout }) => {
@@ -39,7 +41,7 @@ const DashboardLayout = ({ onLogout }) => {
     '/dashboard/productview': 'Products',
     '/dashboard/salesview': 'Sales',
     '/dashboard/categoryview': 'Categories',
-    '/dashboard/wholesalerview': 'Wholesalers',
+    '/dashboard/customerview': 'Customers',
     '/dashboard/profilepage': 'Profilepage',
     "/dashboard/inventoryview":"Inventory",
     '/dashboard': 'Dashboard',
@@ -107,7 +109,7 @@ const DashboardLayout = ({ onLogout }) => {
 
         <Toolbar>
           <Box >
-          
+   
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -121,14 +123,24 @@ const DashboardLayout = ({ onLogout }) => {
               {currentTitle}
             </Typography>
           </Box>
-
+       <Box sx={{ ml:120 ,pt:1}}>
+           <iconeButton  size="large">
+           <NotificationsActiveIcon/>
+           </iconeButton>
+          </Box>
           {/* Avatar dropdown */}
           <IconButton onClick={handleMenuOpen} sx={{  
        
 ml:"90%",
 position:"fixed"
           }}>
-            <Avatar alt="User" />
+             
+            <Avatar alt="User" 
+            src={
+               
+                "https://images.unsplash.com/photo-1502685104226-ee32379fefbe"
+              }
+            />
           </IconButton>
           <Menu
             anchorEl={anchorEl}
@@ -218,7 +230,7 @@ position:"fixed"
         sx={{
           flexGrow: 1,
           p: 0,
-          background:"rgba(0, 217, 255, 0.8)",
+ 
         width: {
       xs: 'calc(100% - 40px)',
       sm: collapsed
@@ -258,9 +270,11 @@ position:"fixed"
             <Route path="productview" element={<Productview />} />
             <Route path="salesview" element={<Salesview />} />
             <Route path="categoryview" element={<Categoryview />} />
-            <Route path="wholesalerview" element={<Wholesalerview />} />
+            {/* <Route path="wholesalerview" element={<Wholesalerview />} /> */}
+              <Route path="customerview" element={<Customerview/>} />
              <Route path="profilepage" element={<Profilepage />} />
             <Route path="inventoryview" element={<InventoryView/>} />
+            {/* <Route path="customerview" element={<Customerview/>} /> */}
    
 
 

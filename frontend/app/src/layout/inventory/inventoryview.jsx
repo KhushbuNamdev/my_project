@@ -252,7 +252,7 @@ const InventoryView = () => {
               <Typography variant="subtitle1" sx={{ fontWeight: "600" }}>
                 {row.productName}
               </Typography>
-           
+             
             </Box>
           );
         }
@@ -376,18 +376,19 @@ const InventoryView = () => {
         </Box>
 
         <MDDataGrid
-          rows={gridRows}
-          columns={columns}
-          getRowId={(row) => row.id}
-          pageSize={10}
-          disableSelectionOnClick
-          loading={loading || tableLoading}
-          autoHeight
-          sx={{
-            "& .MuiDataGrid-row.Mui-selected": { backgroundColor: "transparent" },
-            "& .MuiDataGrid-cell": { borderBottom: "1px solid rgba(0,0,0,0.05)" },
-          }}
-        />
+  rows={gridRows}
+  columns={columns}
+  getRowId={(row) => row.id}
+  pageSize={10}
+  disableSelectionOnClick
+  loading={loading || tableLoading}
+  autoHeight
+  sx={{
+    "& .MuiDataGrid-row.Mui-selected": { backgroundColor: "transparent" },
+    "& .MuiDataGrid-cell": { borderBottom: "1px solid rgba(0,0,0,0.05)" },
+  }}
+/>
+
       </Box>
 
       <InventoryDelete

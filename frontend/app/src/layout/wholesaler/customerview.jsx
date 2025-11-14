@@ -19,7 +19,7 @@ import EditWholesalerDialog from './editwholesaler';
 import DeleteWholesalerDialog from './deletewholesaler';
 import { getAllUsers, createUser } from '../../Slice/userSlice';
 
-const Wholesalerview = () => {
+const Customerview = () => {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.user);
 
@@ -56,12 +56,12 @@ const Wholesalerview = () => {
   // 🔹 Success Handlers
   // ===============================
   const handleEditSuccess = () => {
-    setSnackbar({ open: true, message: 'Wholesaler updated successfully!', severity: 'success' });
+    setSnackbar({ open: true, message: 'User updated successfully!', severity: 'success' });
     dispatch(getAllUsers());
   };
 
   const handleDeleteSuccess = () => {
-    setSnackbar({ open: true, message: 'Wholesaler deleted successfully!', severity: 'success' });
+    setSnackbar({ open: true, message: 'User deleted successfully!', severity: 'success' });
     dispatch(getAllUsers());
   };
 
@@ -75,18 +75,18 @@ const Wholesalerview = () => {
         phoneNumber: wholesalerData.phoneNumber,
         email: `${wholesalerData.phoneNumber}@example.com`,
         password: 'defaultPassword123!',
-        role: 'wholesaler',
+        role: wholesalerData.role || 'wholesaler', // ✅ Allow role to be either wholesaler or retailer
         address: wholesalerData.address,
       };
 
       await dispatch(createUser(userData)).unwrap();
-      setSnackbar({ open: true, message: 'Wholesaler created successfully!', severity: 'success' });
+      setSnackbar({ open: true, message: 'User created successfully!', severity: 'success' });
       handleCloseDialog();
       dispatch(getAllUsers());
     } catch (error) {
       setSnackbar({
         open: true,
-        message: error?.message || 'Failed to create wholesaler. Please check all required fields.',
+        message: error?.message || 'Failed to create user. Please check required fields.',
         severity: 'error',
       });
     }
@@ -102,14 +102,17 @@ const Wholesalerview = () => {
   }, [dispatch]);
 
   // ===============================
-  // 🔹 Filter Wholesalers
+  // 🔹 Filter Wholesalers + Retailers
   // ===============================
-  const wholesalers = users.filter((user) => user.role === 'wholesaler');
+  const wholesalerAndRetailer = users.filter(
+    (user) => user.role === 'wholesaler' || user.role === 'retailer'
+  );
 
   // ===============================
   // 🔹 DataGrid Columns
   // ===============================
   const columns = [
+    { field: 'role', headerName: 'Role', flex: 0.6, minWidth: 100 },
     { field: 'name', headerName: 'Name', flex: 1, minWidth: 150 },
     { field: 'phoneNumber', headerName: 'Phone Number', flex: 1, minWidth: 150 },
     { field: 'businessName', headerName: 'Business Name', flex: 1, minWidth: 150 },
@@ -141,9 +144,10 @@ const Wholesalerview = () => {
   // ===============================
   // 🔹 Map rows
   // ===============================
-  const rows = wholesalers.map((user, index) => ({
+  const rows = wholesalerAndRetailer.map((user, index) => ({
     id: user._id || index,
     _id: user._id,
+    role: user.role || 'N/A',
     name: user.name || 'N/A',
     phoneNumber: user.phoneNumber || 'N/A',
     businessName: user.businessName || 'N/A',
@@ -168,92 +172,91 @@ const Wholesalerview = () => {
   // 🔹 Render
   // ===============================
   return (
-  <Box p={3}>
-    {/* Card Container */}
-    <Box
-      sx={{
-        borderRadius: '20px',
-        overflow: 'hidden',
-        boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
-        backdropFilter: 'blur(20px)',
-        backgroundColor: 'rgba(255,255,255,0.6)',
-      }}
-    >
-      {/* Toolbar: Search + Button */}
+    <Box p={3}>
+      {/* Card Container */}
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          p: 2,
-          borderBottom: '1px solid rgba(255,255,255,0.5)',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
+          backdropFilter: 'blur(20px)',
+          backgroundColor: 'rgba(255,255,255,0.6)',
         }}
       >
-        <MDSearchBar
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
-          placeholder="Search wholesalers..."
+        {/* Toolbar: Search + Button */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 2,
+            borderBottom: '1px solid rgba(255,255,255,0.5)',
+          }}
+        >
+          <MDSearchBar
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+            placeholder="Search wholesalers or retailers..."
+          />
+          <MDButton onClick={handleOpenDialog} variant="contained" color="primary">
+            Add Customer
+          </MDButton>
+        </Box>
+
+        {/* MDDataGrid */}
+        <MDDataGrid
+          rows={filteredRows}
+          columns={columns}
+          loading={loading}
+          pageSize={5}
+          disableTopRadius
         />
-        <MDButton onClick={handleOpenDialog} variant="contained" color="primary">
-          Add Wholesaler
-        </MDButton>
       </Box>
 
-      {/* MDDataGrid */}
-      <MDDataGrid
-        rows={filteredRows}
-        columns={columns}
-        loading={loading}
-        pageSize={5}
-        disableTopRadius
+      {/* Dialogs */}
+      <CreateWholesalerDialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        onCreate={handleCreateWholesaler}
       />
-    </Box>
+      <EditWholesalerDialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        wholesaler={selectedWholesaler}
+        onSuccess={handleEditSuccess}
+      />
+      <DeleteWholesalerDialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        wholesalerId={selectedWholesalerId}
+        onDeleteSuccess={handleDeleteSuccess}
+      />
 
-    {/* Dialogs */}
-    <CreateWholesalerDialog
-      open={openDialog}
-      onClose={handleCloseDialog}
-      onCreate={handleCreateWholesaler}
-    />
-    <EditWholesalerDialog
-      open={editDialogOpen}
-      onClose={handleCloseEditDialog}
-      wholesaler={selectedWholesaler}
-      onSuccess={handleEditSuccess}
-    />
-    <DeleteWholesalerDialog
-      open={deleteDialogOpen}
-      onClose={handleCloseDeleteDialog}
-      wholesalerId={selectedWholesalerId}
-      onDeleteSuccess={handleDeleteSuccess}
-    />
-
-    {/* Snackbar */}
-    <Snackbar
-      open={snackbar.open}
-      autoHideDuration={6000}
-      onClose={handleCloseSnackbar}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-    >
-      <Alert
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        severity={snackbar.severity}
-        variant="filled"
-        sx={{ width: '100%' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {snackbar.message}
-      </Alert>
-    </Snackbar>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
-    {/* Error message if any */}
-    {error && (
-      <Alert severity="error" sx={{ mt: 2 }}>
-        {error}
-      </Alert>
-    )}
-  </Box>
-);
-
+      {/* Error message if any */}
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
+    </Box>
+  );
 };
 
-export default Wholesalerview;
+export default Customerview;

@@ -30,7 +30,7 @@ const menuItems = [
   { text: 'Products', icon: <StoreIcon />, path: '/dashboard/productview' },
   { text: 'Sales', icon: <AttachMoneyIcon />, path: '/dashboard/salesview' },
   { text: 'Categories', icon: <CategoryIcon />, path: '/dashboard/categoryview' },
-  { text: 'Wholesalers', icon: <PeopleIcon />, path: '/dashboard/wholesalerview' },
+  { text: 'Customers', icon: <PeopleIcon />, path: '/dashboard/customerview' },
   {text:"inventory", icon:<InventoryIcon/>, path:"/dashboard/inventoryview"}
 ];
 

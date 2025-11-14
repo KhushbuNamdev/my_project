@@ -30,19 +30,19 @@ const commonRules = {
       'string.min': 'Password must be at least 6 characters long',
     }),
   role: Joi.string()
-    .valid('superadmin', 'wholesaler', 'sales')
+    .valid('superadmin', 'wholesaler', 'retailer', 'sales')
     .default('sales')
     .required()
     .messages({
-      'any.only': 'Role must be one of: superadmin, wholesaler, or sales',
+      'any.only': 'Role must be one of: superadmin, wholesaler, retailer, or sales',
       'any.required': 'Role is required',
     }),
 };
 
-// Wholesaler specific validation rules
-const wholesalerRules = {
+// Business validation rules for both wholesaler and retailer
+const businessRules = {
   businessName: Joi.string().required().trim().messages({
-    'string.empty': 'Business name is required for wholesalers',
+    'string.empty': 'Business name is required',
   }),
   adharNumber: Joi.string()
     .pattern(/^\d{12}$/)
@@ -53,30 +53,35 @@ const wholesalerRules = {
     }),
   gstNumber: Joi.string()
     .pattern(/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/)
-    .required()
+    .when('role', {
+      is: Joi.valid('wholesaler', 'retailer'),
+      then: Joi.required(),
+      otherwise: Joi.forbidden()
+    })
     .messages({
       'string.pattern.base': 'Please provide a valid GST number',
-      'string.empty': 'GST number is required for wholesalers',
+      'string.empty': 'GST number is required',
+      'any.required': 'GST number is required for business accounts'
     }),
   address: Joi.object({
     street: Joi.string().required().trim().messages({
-      'string.empty': 'Street address is required for wholesalers',
+      'string.empty': 'Street address is required',
     }),
     city: Joi.string().required().trim().messages({
-      'string.empty': 'City is required for wholesalers',
+      'string.empty': 'City is required',
     }),
     state: Joi.string().required().trim().messages({
-      'string.empty': 'State is required for wholesalers',
+      'string.empty': 'State is required',
     }),
     pincode: Joi.string()
       .pattern(/^\d{6}$/)
       .required()
       .messages({
         'string.pattern.base': 'Pincode must be 6 digits',
-        'string.empty': 'Pincode is required for wholesalers',
+        'string.empty': 'Pincode is required',
       }),
     country: Joi.string().default('India').trim(),
-  }).when(Joi.object({ role: Joi.string().valid('wholesaler') }).unknown(), {
+  }).when(Joi.object({ role: Joi.string().valid('wholesaler', 'retailer') }).unknown(), {
     then: Joi.object().required(),
     otherwise: Joi.object().optional(),
   }),
@@ -89,44 +94,79 @@ const baseValidation = {
   email: commonRules.email,
   password: commonRules.password,
   role: commonRules.role,
-  adharNumber: wholesalerRules.adharNumber
+  adharNumber: businessRules.adharNumber
 };
 
 // Validation for user registration
-// export const registerValidation = Joi.object(baseValidation).when(
-//   Joi.object({ role: Joi.string().valid('wholesaler') }), 
-//   {
-//     then: Joi.object({
-//       ...baseValidation,
-//       businessName: wholesalerRules.businessName,
-//       gstNumber: wholesalerRules.gstNumber,
-//       address: wholesalerRules.address
-//     })
-//   }
-// );
-
 export const registerValidation = Joi.object({
   name: commonRules.name,
   phoneNumber: commonRules.phoneNumber,
   email: commonRules.email,
   password: commonRules.password,
   role: commonRules.role,
-  adharNumber: wholesalerRules.adharNumber,
+  adharNumber: Joi.string()
+    .pattern(/^\d{12}$/)
+    .optional()
+    .allow('')
+    .messages({
+      'string.pattern.base': 'Aadhar number must be 12 digits',
+    }),
 
-  // Conditional fields for wholesaler
+  // Business name for both wholesaler and retailer
   businessName: Joi.when('role', {
-    is: 'wholesaler',
-    then: wholesalerRules.businessName.required(),
+    is: Joi.valid('wholesaler', 'retailer'),
+    then: Joi.string().required().trim().messages({
+      'string.empty': 'Business name is required',
+    }),
     otherwise: Joi.forbidden()
   }),
+
+  // Business type only for retailer
+
+  // GST number for both wholesaler and retailer
   gstNumber: Joi.when('role', {
-    is: 'wholesaler',
-    then: wholesalerRules.gstNumber.required(),
+    is: Joi.valid('wholesaler', 'retailer'),
+    then: Joi.string()
+      .pattern(/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/)
+      .required()
+      .messages({
+        'string.pattern.base': 'Please provide a valid GST number',
+        'string.empty': 'GST number is required',
+        'any.required': 'GST number is required for business accounts'
+      }),
     otherwise: Joi.forbidden()
   }),
+
+  // Address for both wholesaler and retailer
   address: Joi.when('role', {
-    is: 'wholesaler',
-    then: wholesalerRules.address.required(),
+    is: Joi.valid('wholesaler', 'retailer'),
+    then: Joi.object({
+      street: Joi.string().trim().required().messages({
+        'string.empty': 'Street address is required',
+        'any.required': 'Street address is required',
+      }),
+      city: Joi.string().trim().required().messages({
+        'string.empty': 'City is required',
+        'any.required': 'City is required',
+      }),
+      state: Joi.string().trim().required().messages({
+        'string.empty': 'State is required',
+        'any.required': 'State is required',
+      }),
+      pincode: Joi.string()
+        .pattern(/^\d{6}$/)
+        .required()
+        .messages({
+          'string.pattern.base': 'Pincode must be 6 digits',
+          'string.empty': 'Pincode is required',
+          'any.required': 'Pincode is required',
+        }),
+      country: Joi.string().default('India').trim(),
+    }).required().options({ allowUnknown: false })
+      .messages({
+        'object.base': 'Address is required',
+        'any.required': 'Address is required',
+      }),
     otherwise: Joi.forbidden()
   }),
 });
@@ -198,7 +238,7 @@ export const updateUserValidation = Joi.object({
     .messages({
       'string.pattern.base': 'Phone number must be 10 digits',
     }),
-  role: Joi.string().valid('superadmin', 'wholesaler', 'sales').messages({
+  role: Joi.string().valid('superadmin', 'wholesaler', 'sales', 'retailer').messages({
     'any.only': 'Invalid role',
   }),
 }).min(1);
