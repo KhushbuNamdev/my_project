@@ -46,6 +46,9 @@ const Sidebar = ({ onLogout, collapsed, toggleSidebar }) => {
       scrollbarWidth: 'none',
     },
     width: collapsed ? '80px' : '240px',
+
+    
+    
     height: 'calc(100vh - 32px)',
     position: 'fixed',
     left: '16px',
@@ -213,3 +216,6 @@ const Sidebar = ({ onLogout, collapsed, toggleSidebar }) => {
 };
 
 export default Sidebar;
+
+
+

@@ -27,7 +27,7 @@ const MDSearchBar = ({
         onChange={onChange}
         placeholder={placeholder}
         variant="outlined"
-        InputProps={{
+        slotProps={{
           startAdornment: (
             <InputAdornment position="start">
               <SearchIcon fontSize="small" />
